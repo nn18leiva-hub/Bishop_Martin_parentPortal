@@ -1,0 +1,6 @@
+node_modules
+.env
+uploads/ssn_cards/*
+!uploads/ssn_cards/.gitkeep
+uploads/payment_receipts/*
+!uploads/payment_receipts/.gitkeep
