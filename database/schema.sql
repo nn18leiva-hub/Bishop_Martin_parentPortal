@@ -1,6 +1,14 @@
--- Schema for Bishop Martin Document Request Portal
+-- Schema for Bishop Martin Document Request Portal (V2)
 
-CREATE TABLE IF NOT EXISTS parents (
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS school_payment_info CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS staff CASCADE;
+DROP TABLE IF EXISTS document_requests CASCADE;
+DROP TABLE IF EXISTS document_types CASCADE;
+DROP TABLE IF EXISTS parents CASCADE;
+
+CREATE TABLE parents (
     parent_id SERIAL PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -8,37 +16,44 @@ CREATE TABLE IF NOT EXISTS parents (
     password_hash VARCHAR(255) NOT NULL,
     ssn_card_image_path TEXT,
     verified BOOLEAN DEFAULT FALSE,
+    user_type VARCHAR(50) DEFAULT 'parent' CHECK (user_type IN ('parent', 'past_student')),
+    dob DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS document_types (
+CREATE TABLE document_types (
     document_type_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description TEXT
+    description TEXT,
+    is_auto_generated BOOLEAN DEFAULT FALSE,
+    requires_payment BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE IF NOT EXISTS document_requests (
+CREATE TABLE document_requests (
     request_id SERIAL PRIMARY KEY,
     parent_id INTEGER REFERENCES parents(parent_id) ON DELETE CASCADE,
-    student_bemis_id VARCHAR(100) NOT NULL,
+    student_bemis_id VARCHAR(100),
     student_full_name VARCHAR(255) NOT NULL,
-    student_graduation_year_or_years_attended VARCHAR(100) NOT NULL,
+    student_graduation_year_or_years_attended VARCHAR(100),
     document_type_id INTEGER REFERENCES document_types(document_type_id),
+    form_data JSONB,
+    generated_file_path TEXT,
+    delivery_method VARCHAR(50) CHECK (delivery_method IN ('pickup', 'mailed', 'emailed')),
     request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) DEFAULT 'pending',
     notes TEXT
 );
 
-CREATE TABLE IF NOT EXISTS staff (
+CREATE TABLE staff (
     staff_id SERIAL PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL,
+    role VARCHAR(50) CHECK (role IN ('viewer', 'admin', 'super_admin')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS payments (
+CREATE TABLE payments (
     payment_id SERIAL PRIMARY KEY,
     request_id INTEGER REFERENCES document_requests(request_id) ON DELETE CASCADE,
     receipt_image_path TEXT NOT NULL,
@@ -48,7 +63,7 @@ CREATE TABLE IF NOT EXISTS payments (
     verified_by_staff_id INTEGER REFERENCES staff(staff_id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS school_payment_info (
+CREATE TABLE school_payment_info (
     id SERIAL PRIMARY KEY,
     bank_name VARCHAR(255) NOT NULL,
     account_name VARCHAR(255) NOT NULL,
@@ -56,7 +71,7 @@ CREATE TABLE IF NOT EXISTS school_payment_info (
     instructions TEXT
 );
 
-CREATE TABLE IF NOT EXISTS notifications (
+CREATE TABLE notifications (
     notification_id SERIAL PRIMARY KEY,
     parent_id INTEGER REFERENCES parents(parent_id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,

@@ -1,85 +1,31 @@
-# Bishop Martin High School - Document Request Portal API
-
-This repository contains the backend REST API for the **Document Request Portal** used by parents or guardians of students attending Bishop Martin High School.
+# Bishop Martin High School - Document Request Portal API (V2)
 
 ## Overview
-The system allows parents to:
-- Register an account.
-- Verify their identity using a securely uploaded image of their Social Security card.
-- Request official school documents (e.g. Lateness Form, Absence Form, Enrolment Letter, Transcript).
-- Upload bank transfer payment receipts.
-- Track their request statuses.
+This is the backend API for the Bishop Martin Document Request Portal. It manages document requests for Parents and Past Students, enforcing automated PDF slip generation and a multi-tiered administrative access framework.
 
-It also provides staff with secure endpoints to review parents, verify manual bank payments, and update request statuses to ready for pickup.
+## Key Features
+- **Auto-Generated PDFs**: Automatically draws permission and absence slips based on JSON input, stamping the requester's digital signature seamlessly using `pdfkit`.
+- **Global Auth & 4-Tier Roles**: A single JWT authentication loop (`/auth/login`) smartly routes traffic across:
+  - **Parents & Past Students**: Enforces 18+ age constraints and restricts past students to transcripts.
+  - **Viewers**: Fully sandboxed read-only access (for Principals).
+  - **Admins**: Office workers who progress requests and verify bank payments/identities.
+  - **Super Admins**: Manages the system and provisions office workers.
+- **Dynamic Payment Logic**: Hard blocks document generation structurally depending on the cost class of the document.
 
-## Tech Stack
-- **Node.js & Express**: Backend routing and application logic.
-- **PostgreSQL (pg)**: Robust relational database for retaining transaction and portal data.
-- **JSON Web Tokens (JWT)**: Stateless authorization separating Staff and Parents.
-- **Bcrypt**: Cryptographically hashes and securely stores all passwords in the database.
-- **Multer**: Safely manages the interception of Multi-Part image forms handling SSN cards and transaction receipts.
+## Developer Guide
 
----
+### Setup using Docker (Recommended)
+This system is natively containerized for plug-and-play scaling.
+1. Make sure you have Docker Desktop installed.
+2. Run `docker-compose up -d --build`.
+3. The server will run on `http://localhost:3000`.
 
-## 🚀 Running the Project
+### Setup using Node.js Locally
+1. Ensure PostgreSQL is running locally with a database named `parentportal`.
+2. Connect to postgres and execute the scripts in `database/schema.sql` and `database/seed.sql`.
+3. Create a `.env` file based on your local settings.
+4. Run `npm install`.
+5. Run `npm start`.
 
-### 1. Prerequisites
-- **Node.js** environment installed.
-- **PostgreSQL** running locally.
-
-### 2. Environment Variables (.env)
-In the project root directory, the `.env` manages connection configurations. Make sure it looks like this:
-```env
-PORT=3000
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=Loganito2
-DB_NAME=parentportal
-JWT_SECRET=super_secret_jwt_key_here
-```
-
-### 3. Install Dependencies
-```bash
-npm install
-```
-
-### 4. Launch the Server
-To run in standard mode:
-```bash
-npm start
-```
-To run in development mode with auto-reloads (Nodemon):
-```bash
-npm run dev
-```
-
-The server will accept incoming HTTP connections at **`http://localhost:3000`**.
-
----
-
-## 🧪 Testing the Endpoints
-
-### 1. Postman Collection
-A **Postman Collection** is included out-of-the-box (`Bishop_Martin_API.postman_collection.json`).  
-1. Open up your Postman client.
-2. Import the JSON file from the project directory.
-3. Replace the `Bearer YOUR_TOKEN_HERE` placeholder in the Headers with actual authorization keys generated dynamically upon calling the Login endpoint!
-
-### 2. Integration Test Script
-A fast, automated test scenario is integrated into the codebase. To verify your database is responding predictably across all modules, simply execute:
-```bash
-node test_endpoints.js
-```
-
----
-
-## 👥 Pre-Configured Users (Staff Accounts)
-Seed defaults exist to grant immediate staff-level control to manage incoming parent portals.
-
-The predefined test accounts share the same password `password123`:
-1. **Accounts Clerk**: `clerk@bmhs.edu.bz`
-2. **IT Technician**: `it@bmhs.edu.bz`
-3. **Office Staff**: `office@bmhs.edu.bz`
-
-Parents must be generated dynamically using the `POST /auth/register` API route to successfully associate their unique Database ID integer to subsequent SSN card uploads & request instances.
+### Frontend Companion Start Guide
+Please read `COMPREHENSIVE_GUIDE.md` included in this repository. It covers exactly how the Frontend Team should consume the endpoints, manage the multi-tier JWT routing, and formulate dynamic forms.

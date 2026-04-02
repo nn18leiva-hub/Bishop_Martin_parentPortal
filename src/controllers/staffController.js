@@ -22,7 +22,11 @@ const verifyParent = async (req, res) => {
         if (!parent_id) return res.status(400).json({ message: 'parent_id is required.' });
 
         await db.query('UPDATE parents SET verified = TRUE WHERE parent_id = $1', [parent_id]);
-        res.json({ message: 'Parent verified successfully.' });
+        
+        // Progress any suspended requests
+        await db.query(`UPDATE document_requests SET status = 'pending' WHERE parent_id = $1 AND status = 'pending_verification'`, [parent_id]);
+        
+        res.json({ message: 'Identity verified successfully. Suspended requests have been resumed to pending.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error.' });
@@ -50,7 +54,7 @@ const updateRequestStatus = async (req, res) => {
         const { request_id, status } = req.body;
         if (!request_id || !status) return res.status(400).json({ message: 'request_id and status are required.' });
 
-        if (!['pending', 'ready_for_pickup'].includes(status)) {
+        if (!['pending', 'ready_for_pickup', 'pending_verification', 'denied', 'completed'].includes(status)) {
             return res.status(400).json({ message: 'Invalid status.' });
         }
 

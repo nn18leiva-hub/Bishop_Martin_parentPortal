@@ -26,6 +26,7 @@ const parentRoutes = require('./routes/parentRoutes');
 const requestRoutes = require('./routes/requestRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const superAdminRoutes = require('./routes/superAdminRoutes');
 
 // Mount Routes
 app.use('/auth', authRoutes);
@@ -33,6 +34,7 @@ app.use('/parent', parentRoutes);
 app.use('/requests', requestRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/staff', staffRoutes);
+app.use('/superadmin', superAdminRoutes);
 
 const PORT = process.env.PORT || 3000;
 

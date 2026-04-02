@@ -5,10 +5,33 @@ require('dotenv').config();
 
 const registerParent = async (req, res) => {
     try {
-        const { full_name, email, phone, password } = req.body;
+        const { full_name, email, phone, password, user_type, dob } = req.body;
         
         if (!full_name || !email || !password) {
             return res.status(400).json({ message: 'Missing required fields.' });
+        }
+
+        const type = user_type || 'parent';
+        if (!['parent', 'past_student'].includes(type)) {
+            return res.status(400).json({ message: 'Invalid user_type. Must be parent or past_student.' });
+        }
+
+        if (!dob) {
+            return res.status(400).json({ message: 'Date of birth (dob) is required to register for all users.' });
+        }
+
+        if (type === 'past_student') {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            if (age < 18) {
+                return res.status(403).json({ message: 'Past students must be 18 years or older to register.' });
+            }
         }
 
         const emailCheck = await db.query('SELECT parent_id FROM parents WHERE email = $1', [email]);
@@ -20,11 +43,11 @@ const registerParent = async (req, res) => {
         const password_hash = await bcrypt.hash(password, saltRounds);
 
         const newParent = await db.query(
-            'INSERT INTO parents (full_name, email, phone, password_hash) VALUES ($1, $2, $3, $4) RETURNING parent_id, full_name, email',
-            [full_name, email, phone, password_hash]
+            'INSERT INTO parents (full_name, email, phone, password_hash, user_type, dob) VALUES ($1, $2, $3, $4, $5, $6) RETURNING parent_id, full_name, email, user_type',
+            [full_name, email, phone, password_hash, type, type === 'past_student' ? dob : null]
         );
 
-        res.status(201).json({ message: 'Parent registered successfully.', parent: newParent.rows[0] });
+        res.status(201).json({ message: 'User registered successfully.', user: newParent.rows[0] });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error during registration.' });
