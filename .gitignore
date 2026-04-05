@@ -1,6 +1,30 @@
-node_modules
+# Workspace Files
+node_modules/
+frontend/node_modules/
 .env
-uploads/ssn_cards/*
-!uploads/ssn_cards/.gitkeep
-uploads/payment_receipts/*
-!uploads/payment_receipts/.gitkeep
+
+# Build Artifacts
+dist/
+frontend/dist/
+build/
+
+# IDE/System Files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Uploads & Data
+uploads/
+pgdata/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
