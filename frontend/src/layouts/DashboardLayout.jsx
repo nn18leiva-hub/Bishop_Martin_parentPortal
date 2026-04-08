@@ -53,7 +53,7 @@ const DashboardLayout = () => {
   return (
     <div className="app-container">
       <header className="navbar">
-        <Link to="/dashboard" className="navbar-brand">
+        <Link to="/dashboard/parents" className="navbar-brand">
           <FileText size={24} />
           Bishop Martin Portal
         </Link>

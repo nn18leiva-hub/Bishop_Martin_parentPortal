@@ -124,7 +124,7 @@ const NewRequest = () => {
         method: 'POST',
         body: payload 
       });
-      navigate('/dashboard');
+      navigate('/dashboard/parents');
     } catch (err) {
       setError(err.message || 'Failed to submit request');
     } finally {
@@ -134,7 +134,7 @@ const NewRequest = () => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <button onClick={() => navigate('/dashboard')} className="btn-secondary flex items-center gap-2 mb-4" style={{ padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)' }}>
+      <button onClick={() => navigate('/dashboard/parents')} className="btn-secondary flex items-center gap-2 mb-4" style={{ padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)' }}>
         <ArrowLeft size={16} /> Back to Requests
       </button>
 
