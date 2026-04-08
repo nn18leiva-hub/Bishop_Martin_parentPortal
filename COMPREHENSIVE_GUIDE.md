@@ -58,18 +58,19 @@ The behavior of every request is centrally coordinated by the `document_types` d
   2. The user inputs the mandatory **Student Name** and **Student ID**.
   3. The API logs a blank, passive request in the database.
   4. The office staff is tasked to physically type out the letter or print the transcript themselves from internal school management systems.
-  5. Because these documents incur a fee, the system actively expects the parent to eventually hit the `POST /payment/upload-receipt` endpoint to upload photographic proof of their bank transfer. Until payment is uploaded and verified by an Admin, the request will not progress to `ready_for_pickup`.
+  5. **Payment Process:** Because these documents incur a fee, the site will prominently display the proper Account Information (Bank Details) to the parent. The parent must then perform a bank transfer and upload proof of payment (e.g. a receipt image) via the front-end to the `POST /payment/upload-receipt` endpoint. Until this proof of payment is uploaded by the user and verified by an Admin, the request will remain paused and will not progress to `ready_for_pickup`.
 
-### B. Automated Forms (Absence, Lateness, Standard Permissions)
+### B. Automated Submissions (Absence, Lateness, Standard Permissions)
+These are not traditional document "requests" that parents physically pick up. Instead, they function strictly as official **submissions** to the institution.
 - **Configuration**: `is_auto_generated: true`, `requires_payment: false`
 - **Flow**:
-  1. The user selects an automated slip (e.g., Lateness Slip).
+  1. The user selects an automated submission type (e.g., Lateness Slip).
   2. The user provides the mandatory **Student Name** and **Student ID**.
   3. The front-end renders a custom sub-form collecting `form_data` (e.g., "Reason for lateness: Missed the bus").
   4. The parent is required to use their touchscreen/mouse to physically draw their signature on an HTML canvas.
   5. The front-end packages the **Student Name**, **Student ID**, the JSON `form_data`, and a base64 string of the signature (`signature_image`) and fires it to the API.
-  6. **The Backend PDF Engine Engine**: Our server intercepts these data points, immediately boots up `pdfkit`, and dynamically paints a perfectly formatted PDF. It stamps the Student Name, ID, Reason, and explicitly embeds the drawn signature onto the document's signature line. 
-  7. The final PDF is saved directly to the school's active server directory, skipping manual data entry entirely.
+  6. **The Backend PDF Engine**: Our server intercepts these data points, immediately boots up `pdfkit`, and dynamically paints a perfectly formatted PDF document. It stamps the Student Name, ID, Reason, and explicitly embeds the drawn signature onto the document's signature line. 
+  7. **Internal Retention:** The final PDF is automatically generated and saved directly to the school's active server directory. It is then held securely by the school for their internal records without any manual data entry required. The parents are not prompted to pick up these documents.
 
 ---
 
