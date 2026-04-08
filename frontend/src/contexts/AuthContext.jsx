@@ -39,9 +39,10 @@ export const AuthProvider = ({ children }) => {
     setAuthToken(res.token);
     
     // Only fetch profile if it's a parent/past_student.
-    // If it's staff, we don't handle it in Tier 1 UX right now.
-    if (res.type === 'parent') {
+    if (res.type === 'parent' || res.type === 'past_student' || !res.type) {
       await fetchProfile();
+    } else {
+      setUser({ type: res.type, role: res.role });
     }
     return res;
   };

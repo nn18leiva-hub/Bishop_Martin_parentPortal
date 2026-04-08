@@ -6,6 +6,8 @@ import Register from './pages/Register';
 import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import NewRequest from './pages/NewRequest';
+import StaffDashboard from './pages/StaffDashboard';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import './index.css';
 
 function App() {
@@ -21,6 +23,9 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="new" element={<NewRequest />} />
           </Route>
+          
+          <Route path="/staff" element={<StaffDashboard />} />
+          <Route path="/superadmin" element={<SuperAdminDashboard />} />
         </Routes>
       </Router>
     </AuthProvider>
