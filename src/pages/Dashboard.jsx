@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
 import { Link } from 'react-router-dom';
-import { FilePlus, Eye, Clock, CheckCircle } from 'lucide-react';
+import { FilePlus, Eye, Clock, CheckCircle, UploadCloud } from 'lucide-react';
+
+const DOCUMENT_TYPES = [
+  { id: 1, name: 'lateness_form', label: 'Lateness Form', is_auto_generated: true, requires_payment: false },
+  { id: 2, name: 'absence_form', label: 'Absence Form', is_auto_generated: true, requires_payment: false },
+  { id: 3, name: 'permission_slip', label: 'Permission Slip', is_auto_generated: true, requires_payment: false },
+  { id: 4, name: 'enrolment_letter', label: 'Enrolment Letter', is_auto_generated: false, requires_payment: true },
+  { id: 5, name: 'transcript', label: 'Transcript', is_auto_generated: false, requires_payment: true },
+];
 
 const Dashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -12,10 +20,11 @@ const Dashboard = () => {
     loadRequests();
   }, []);
 
+  const [uploadingReceipt, setUploadingReceipt] = useState(null); // stores request_id
+
   const loadRequests = async () => {
     try {
       const data = await apiFetch('/requests/my-requests');
-      // Backend returns either an array of objects or empty array.
       setRequests(Array.isArray(data) ? data : []);
     } catch (err) {
       setError('Failed to load your requests. ' + err.message);
@@ -23,6 +32,31 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  const handleReceiptUpload = async (request_id, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('request_id', request_id);
+    formData.append('receipt_image', file);
+
+    setUploadingReceipt(request_id);
+    try {
+      await apiFetch('/payment/upload-receipt', {
+        method: 'POST',
+        body: formData,
+      });
+      alert("Receipt uploaded! We'll verify it shortly.");
+      loadRequests();
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingReceipt(null);
+    }
+  };
+
+  const getDocInfo = (type_id) => DOCUMENT_TYPES.find(d => d.id === parseInt(type_id)) || {};
 
   const getStatusBadge = (status) => {
     switch(status) {
@@ -73,6 +107,7 @@ const Dashboard = () => {
                   <th>Status</th>
                   <th>Delivery</th>
                   <th>Date</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,6 +120,15 @@ const Dashboard = () => {
                     <td style={{ textTransform: 'capitalize' }}>{req.delivery_method}</td>
                     <td style={{ color: 'var(--text-muted)' }}>
                       {new Date(req.request_date).toLocaleDateString()}
+                    </td>
+                    <td>
+                       {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && (
+                         <label className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                           {uploadingReceipt === req.request_id ? 'Uploading...' : 'Upload Receipt'}
+                           <UploadCloud size={14} />
+                           <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
+                         </label>
+                       )}
                     </td>
                   </tr>
                 ))}

@@ -22,7 +22,7 @@ const Login = () => {
       // Determine redirection based on type.
       // Admins are not part of this user side app, but if they login, maybe redirect to a static error or somewhere else.
       if (res.type === 'parent' || res.type === 'past_student') {
-         navigate('/dashboard');
+         navigate('/dashboard/parents');
       } else {
          setError('This portal is for Parents and Past Students. For Staff access, please use the Staff Portal.');
       }
