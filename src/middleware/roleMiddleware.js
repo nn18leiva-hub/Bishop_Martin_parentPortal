@@ -7,9 +7,9 @@ const requireRole = (requiredRole) => {
         const type = req.user.type; // 'parent' or 'staff'
         const role = req.user.role; // 'viewer', 'admin', 'super_admin' or undefined
         
-        // 1. Parent endpoints only for parents
+        // 1. Parent endpoints only for parents and past students
         if (requiredRole === 'parent') {
-            if (type !== 'parent') return res.status(403).json({ message: 'Access denied. Parents only.' });
+            if (type !== 'parent' && type !== 'past_student') return res.status(403).json({ message: 'Access denied. Parents and Past Students only.' });
             return next();
         }
 

@@ -7,7 +7,8 @@ export const removeAuthToken = () => localStorage.removeItem('token');
  */
 export const apiFetch = async (endpoint, options = {}) => {
   const token = getAuthToken();
-  
+  const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+
   const headers = {
     ...options.headers,
   };
@@ -21,7 +22,7 @@ export const apiFetch = async (endpoint, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(endpoint, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });

@@ -18,6 +18,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadRequests();
+    const interval = setInterval(() => {
+       apiFetch('/requests/my-requests').then(data => {
+         setRequests(Array.isArray(data) ? data : []);
+       }).catch(err => console.error(err));
+    }, 15000); // 15s polling
+    return () => clearInterval(interval);
   }, []);
 
   const [uploadingReceipt, setUploadingReceipt] = useState(null); // stores request_id
@@ -73,18 +79,22 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2>My Requests</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Manage your submitted document requests.</p>
+      <div className="flex flex-responsive justify-between items-start mb-10 gap-8">
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>My Requests</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: '1.5' }}>Manage and track your submitted document applications.</p>
         </div>
-        <Link to="/dashboard/new" className="btn-primary" style={{ width: 'auto' }}>
+        <Link 
+          to="/dashboard/parents/new" 
+          className="btn-primary w-full-mobile shadow-lg" 
+          style={{ width: 'auto', padding: '0.85rem 1.75rem', fontSize: '0.9rem', flexShrink: 0, marginTop: '8px' }}
+        >
           <FilePlus size={18} />
           New Request
         </Link>
       </div>
 
-      <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
+      <div className="glass-panel" style={{ padding: '0', overflow: 'hidden', width: '100%' }}>
         {loading ? (
           <div className="p-4 text-center">Loading requests...</div>
         ) : error ? (
@@ -94,46 +104,79 @@ const Dashboard = () => {
              <FilePlus size={48} color="var(--glass-border)" style={{ marginBottom: '1rem' }} />
              <h3>No requests yet</h3>
              <p style={{ color: 'var(--text-muted)' }}>You haven't requested any documents.</p>
-             <Link to="/dashboard/new" className="btn-primary mt-2" style={{ width: 'auto' }}>Request Now</Link>
+             <Link to="/dashboard/parents/new" className="btn-primary mt-2" style={{ width: 'auto', display: 'inline-flex' }}>Request Now</Link>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Request ID</th>
-                  <th>Document</th>
-                  <th>Student Name</th>
-                  <th>Status</th>
-                  <th>Delivery</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map(req => (
-                  <tr key={req.request_id}>
-                    <td style={{ fontWeight: 500 }}>#{req.request_id}</td>
-                    <td>{req.document_type_name || `Doc ID: ${req.document_type_id}`}</td>
-                    <td>{req.student_full_name}</td>
-                    <td>{getStatusBadge(req.status)}</td>
-                    <td style={{ textTransform: 'capitalize' }}>{req.delivery_method}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>
-                      {new Date(req.request_date).toLocaleDateString()}
-                    </td>
-                    <td>
-                       {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && (
-                         <label className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                           {uploadingReceipt === req.request_id ? 'Uploading...' : 'Upload Receipt'}
-                           <UploadCloud size={14} />
-                           <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
-                         </label>
-                       )}
-                    </td>
+          <div className="animate-up">
+            {/* Mobile View: Cards */}
+            <div className="mobile-view" style={{ flexDirection: 'column', gap: '1.5rem' }}>
+              {requests.map(req => (
+                <div className="request-card" key={req.request_id}>
+                  <div className="request-card-header">
+                    <div>
+                      <span className="request-card-title">{req.document_type_name}</span>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        #{req.request_id} • {new Date(req.request_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {getStatusBadge(req.status)}
+                  </div>
+                  
+                  <div style={{ margin: '1rem 0', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>{req.student_full_name}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>Method: {req.delivery_method}</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && (
+                      <label className="btn-primary" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', cursor: 'pointer', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary-color)', border: '1px solid var(--primary-color)', boxShadow: 'none' }}>
+                        {uploadingReceipt === req.request_id ? 'Uploading...' : 'Upload Receipt'}
+                        <UploadCloud size={16} />
+                        <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View: Table */}
+            <div className="desktop-block" style={{ overflowX: 'auto', width: '100%' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref</th>
+                    <th>Document</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Delivery</th>
+                    <th>Requested On</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {requests.map(req => (
+                    <tr key={req.request_id}>
+                      <td style={{ fontWeight: 600 }}>#{req.request_id}</td>
+                      <td style={{ fontWeight: 500 }}>{req.document_type_name}</td>
+                      <td>{req.student_full_name}</td>
+                      <td>{getStatusBadge(req.status)}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{req.delivery_method}</td>
+                      <td>{new Date(req.request_date).toLocaleDateString()}</td>
+                      <td>
+                        {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && (
+                          <label className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer', width: 'auto' }}>
+                            {uploadingReceipt === req.request_id ? '...' : 'Upload Receipt'}
+                            <UploadCloud size={14} />
+                            <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
+                          </label>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

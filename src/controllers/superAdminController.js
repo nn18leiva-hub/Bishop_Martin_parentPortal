@@ -45,7 +45,7 @@ const deleteStaffUser = async (req, res) => {
         res.json({ message: 'Staff user deleted successfully.' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({ message: 'Server error deleting staff user.' });
     }
 };
 
@@ -59,4 +59,41 @@ const getAllStaffUsers = async (req, res) => {
     }
 };
 
-module.exports = { createStaffUser, deleteStaffUser, getAllStaffUsers };
+const getAllPublicUsers = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT parent_id as id, full_name, email, phone, user_type, verified, ssn_card_image_path, dob, created_at 
+            FROM parents
+            ORDER BY created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching public users.' });
+    }
+};
+
+const overridePassword = async (req, res) => {
+    try {
+        const { targetEmail, newPassword } = req.body;
+        if (!targetEmail || !newPassword) return res.status(400).json({ message: 'Email and new password required.' });
+
+        const password_hash = await bcrypt.hash(newPassword, 10);
+        
+        let updateRes = await db.query('UPDATE parents SET password_hash = $1 WHERE email = $2 RETURNING parent_id', [password_hash, targetEmail]);
+        if (updateRes.rows.length === 0) {
+            updateRes = await db.query('UPDATE staff SET password_hash = $1 WHERE email = $2 RETURNING staff_id', [password_hash, targetEmail]);
+        }
+
+        if (updateRes.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found in any directory.' });
+        }
+
+        res.json({ message: `Successfully overrode password for ${targetEmail}` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error attempting to override password.' });
+    }
+};
+
+module.exports = { createStaffUser, getAllStaffUsers, deleteStaffUser, getAllPublicUsers, overridePassword };

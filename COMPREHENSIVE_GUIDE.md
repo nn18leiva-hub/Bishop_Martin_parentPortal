@@ -107,9 +107,41 @@ A single, universal endpoint (`POST /auth/login`) handles all 5 tiers of users s
   - A button rendering a modal to view SSN cards, with an "Approve Identity" button.
   - A dropdown selector on each request row that patches the status to "Ready for Pickup" when the document is physically prepared, triggering the final notification to the parent.
 
-### V. Super Admin Control Panel
-- A conditionally rendered sidebar/panel that only exists if the JWT `role === 'super_admin'`. 
-- Provides forms to input Name, Email, and Password to rapidly provision new `admin` or `viewer` accounts for office personnel (`POST /superadmin/staff`). 
+### V. Super Admin Control Panel (3-Tab Orchestration)
+The SuperAdmin console is architected into three dedicated, full-width zones to maximize breathing room and clarity:
+1. **STAFF REGISTRY**: A comprehensive full-width table for managing the active node cluster.
+2. **PROVISION NEW STAFF**: A focused, clean zone for onboarding new personnel.
+3. **PUBLIC USERS**: An expansive table for managing parent and past student accounts.
+
+---
+
+## 5. Design Philosophy: The "Space-First" Standard
+
+To maintain the portal's elite, premium feel, all developers must adhere to the **Space-First** methodology. This is the antidote to "janky," cramped UIs and ensures a state-of-the-art administrative experience.
+
+### I. The Padding Manifesto
+- **Global Panels**: Every `glass-panel` must have a minimum internal padding of `2.5rem` to `3.5rem`. Never cram content to the edges.
+- **Section Gaps**: Use massive vertical gaps (e.g., `mb-20` or `gap-16`) between major dashboard components.
+
+### II. Unified Table Expansion
+- All data registries must be **full-width**. Avoid tucking tables into side-columns unless strictly necessary for a secondary utility.
+- Every table row must have high-contrast hover effects and generous cell vertical padding.
+
+### III. Mobile Scroll Integrity
+- **No Locked Viewports**: The use of `100vh` on the primary `app-container` or `html/body` is strictly prohibited. 
+- **Native Scrolling**: Allow the document to flow naturally. Mobile users must be able to scroll through long lists without competing with internal overflow containers.
+
+---
+
+## 6. Unified Docker Architecture (Standard Deployment)
+
+The portal is designed for high-availability "one-command" deployment.
+
+### I. Reverse Proxy (Nginx)
+The system uses an Nginx container as the **Standard Entrance**. It serves the compiled React assets and acts as a reverse proxy for all `/api` calls. This centralizes all traffic on Port 80 and eliminates CORS-related configuration overhead.
+
+### II. Cross-Platform Compatibility
+All Docker images are built using `alpine` variants, which provide native multi-architecture support. This ensures the system runs with optimized performance on Intel, AMD, and Apple Silicon (ARM) hardware without modification.
 
 ---
 

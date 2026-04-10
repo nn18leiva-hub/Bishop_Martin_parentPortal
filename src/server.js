@@ -28,13 +28,18 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const superAdminRoutes = require('./routes/superAdminRoutes');
 
-// Mount Routes
-app.use('/auth', authRoutes);
-app.use('/parent', parentRoutes);
-app.use('/requests', requestRoutes);
-app.use('/payment', paymentRoutes);
-app.use('/staff', staffRoutes);
-app.use('/superadmin', superAdminRoutes);
+// Mount Routes securely through /api namespace
+app.use('/api/auth', authRoutes);
+app.use('/api/parent', parentRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/superadmin', superAdminRoutes);
+
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler Caught:", err.message, "Field:", err.field);
+  res.status(500).json({ error: err.message, field: err.field });
+});
 
 const PORT = process.env.PORT || 3000;
 

@@ -3,10 +3,21 @@ const db = require('../config/db');
 const getAllRequests = async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT dr.*, p.full_name as parent_name, p.email as parent_email, p.verified as parent_verified, dt.name as document_type_name
+            SELECT 
+                dr.*, 
+                p.full_name as parent_name, 
+                p.email as parent_email, 
+                p.verified as parent_verified, 
+                p.ssn_card_image_path,
+                dt.name as document_type_name,
+                dt.requires_payment,
+                pmt.payment_id,
+                pmt.receipt_image_path,
+                pmt.verified as payment_verified
             FROM document_requests dr
             JOIN parents p ON dr.parent_id = p.parent_id
             JOIN document_types dt ON dr.document_type_id = dt.document_type_id
+            LEFT JOIN payments pmt ON dr.request_id = pmt.request_id
             ORDER BY dr.request_date DESC
         `);
         res.json(result.rows);

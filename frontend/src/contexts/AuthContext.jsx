@@ -8,21 +8,15 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Load user profile if we have a token
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      // Decode JWT roughly to know type, or just call /parent/profile
-      // We'll call /parent/profile to get verified status too
-      fetchProfile();
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = async (type, role) => {
     try {
-      const data = await apiFetch('/parent/profile');
-      setUser(data);
+      if (type === 'staff') {
+         // Dummy set user for staff to keep the context hydrated
+         setUser({ type, role, full_name: 'Admin User' });
+      } else {
+         const data = await apiFetch('/parent/profile');
+         setUser(data);
+      }
     } catch (err) {
       console.error('Failed to load profile', err);
       removeAuthToken();
@@ -30,6 +24,20 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        fetchProfile(payload.type, payload.role);
+      } catch (e) {
+        fetchProfile(); // fallback
+      }
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   const login = async (email, password) => {
     const res = await apiFetch('/auth/login', {

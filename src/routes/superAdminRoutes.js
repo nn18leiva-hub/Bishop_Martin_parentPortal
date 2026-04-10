@@ -10,4 +10,7 @@ router.post('/staff', superAdminController.createStaffUser);
 router.get('/staff', superAdminController.getAllStaffUsers);
 router.delete('/staff/:staff_id', superAdminController.deleteStaffUser);
 
+router.get('/users', superAdminController.getAllPublicUsers);
+router.post('/override-password', superAdminController.overridePassword);
+
 module.exports = router;
