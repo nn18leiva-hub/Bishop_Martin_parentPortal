@@ -1,20 +1,14 @@
-FROM node:18-alpine
-
-# Create app directory
+# Build stage
+FROM node:18-alpine as build-stage
 WORKDIR /app
-
-# Install app dependencies
 COPY package*.json ./
-RUN npm install --production
-
-# Bundle app source
+RUN npm install
 COPY . .
+RUN npm run build
 
-# Ensure upload directories exist
-RUN mkdir -p uploads/ssn_cards uploads/payment_receipts
-
-# Expose the API port
-EXPOSE 3000
-
-# Start server
-CMD ["npm", "start"]
+# Production stage
+FROM nginx:alpine
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
