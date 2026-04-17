@@ -12,6 +12,7 @@ const SuperAdminDashboard = () => {
   
   const [staffList, setStaffList] = useState([]);
   const [userList, setUserList] = useState([]);
+  const [stats, setStats] = useState({ registered: { staff: [], parents: [] }, online: { staff: [], parents: [] } });
   const [dataLoading, setDataLoading] = useState(true);
   
   const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'admin' });
@@ -27,12 +28,14 @@ const SuperAdminDashboard = () => {
 
   const loadData = async () => {
     try {
-      const [staffData, userData] = await Promise.all([
+      const [staffData, userData, statsData] = await Promise.all([
         apiFetch('/superadmin/staff'),
-        apiFetch('/superadmin/users')
+        apiFetch('/superadmin/users'),
+        apiFetch('/superadmin/stats')
       ]);
       setStaffList(Array.isArray(staffData) ? staffData : []);
       setUserList(Array.isArray(userData) ? userData : []);
+      setStats(statsData || { registered: { staff: [], parents: [] }, online: { staff: [], parents: [] } });
     } catch (err) {
       console.error(err);
     } finally {
@@ -139,24 +142,66 @@ const SuperAdminDashboard = () => {
         </button>
       </div>
 
-      {/* Global Toolbar */}
-      <div className="flex flex-responsive justify-between items-center mb-12 gap-8 glass-panel" style={{ padding: '1.75rem 2.5rem', flexWrap: 'wrap' }}>
-         <div className="flex items-center gap-3 w-full-mobile" style={{ flex: '1 1 400px', minWidth: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '14px', padding: '0.85rem 1.5rem', border: '1px solid var(--glass-border)' }}>
-            <Search size={20} color="var(--primary-color)" />
-            <input type="text" placeholder={`Search ${activeTab}...`} style={{ background: 'transparent', border: 'none', outline: 'none', color: '#fff', width: '100%', fontSize: '0.95rem' }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+      {/* Comprehensive Statistics Panel */}
+      <div className="grid grid-3 gap-6 mb-12">
+         {/* Registered Breakdown */}
+         <div className="glass-panel" style={{ borderLeft: '4px solid var(--primary-color)', padding: '1.5rem' }}>
+            <div className="flex justify-between items-center mb-4">
+               <h3 style={{ fontSize: '1rem', color: 'var(--primary-color)' }}>Registered Base</h3>
+               <Server size={18} color="var(--primary-color)" />
+            </div>
+            <div className="flex flex-col gap-3">
+               <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Parents/Students</span>
+                  <span style={{ fontWeight: 700 }}>{stats.registered.parents.reduce((acc, curr) => acc + parseInt(curr.count), 0)}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Staff (Admins/Viewers)</span>
+                  <span style={{ fontWeight: 700 }}>{stats.registered.staff.reduce((acc, curr) => acc + parseInt(curr.count), 0)}</span>
+               </div>
+               <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '8px', paddingTop: '8px' }} className="flex justify-between items-center">
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Total Systems</span>
+                  <span style={{ fontWeight: 800, color: 'var(--primary-color)' }}>{staffList.length + userList.length}</span>
+               </div>
+            </div>
          </div>
 
-         <div className="flex gap-8 desktop-view" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <div className="text-right">
-               <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>Registered Nodes</p>
-               <p style={{ fontWeight: 800, fontSize: '1.25rem', color: '#fff' }}>{staffList.length + userList.length}</p>
+         {/* Active/Online Breakdown */}
+         <div className="glass-panel" style={{ borderLeft: '4px solid var(--success-color)', padding: '1.5rem' }}>
+            <div className="flex justify-between items-center mb-4">
+               <h3 style={{ fontSize: '1rem', color: 'var(--success-color)' }}>Online Nodes (15m)</h3>
+               <Cpu size={18} color="var(--success-color)" />
             </div>
-            <div className="text-right" style={{ borderLeft: '1px solid var(--glass-border)', paddingLeft: '2rem' }}>
-               <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>System Integrity</p>
-               <p style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
-                  <div style={{ width: '10px', height: '10px', background: 'var(--success-color)', borderRadius: '50%', boxShadow: '0 0 12px var(--success-color)' }}></div>
+            <div className="flex flex-col gap-3">
+               <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Active Parents</span>
+                  <span style={{ fontWeight: 700, color: 'var(--success-color)' }}>{stats.online.parents.reduce((acc, curr) => acc + parseInt(curr.count), 0)}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Active Staff</span>
+                  <span style={{ fontWeight: 700, color: 'var(--success-color)' }}>{stats.online.staff.reduce((acc, curr) => acc + parseInt(curr.count), 0)}</span>
+               </div>
+               <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '8px', paddingTop: '8px' }} className="flex justify-between items-center">
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Global Sync</span>
+                  <span style={{ fontWeight: 800, color: 'var(--success-color)' }}>
+                     {stats.online.parents.reduce((acc, curr) => acc + parseInt(curr.count), 0) + stats.online.staff.reduce((acc, curr) => acc + parseInt(curr.count), 0)} Live
+                  </span>
+               </div>
+            </div>
+         </div>
+
+         {/* Search & Integrity */}
+         <div className="glass-panel flex flex-col justify-between" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)' }}>
+            <div className="flex items-center gap-3 mb-4" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '0.5rem 1rem', border: '1px solid var(--glass-border)' }}>
+               <Search size={18} color="var(--text-muted)" />
+               <input type="text" placeholder={`Filter ${activeTab}...`} style={{ background: 'transparent', border: 'none', outline: 'none', color: '#fff', width: '100%', fontSize: '0.85rem' }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+            </div>
+            <div className="flex justify-between items-center">
+               <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>System Integrity</span>
+               <div className="flex items-center gap-2" style={{ color: 'var(--success-color)', fontWeight: 700, fontSize: '0.85rem' }}>
+                  <div style={{ width: '8px', height: '8px', background: 'var(--success-color)', borderRadius: '50%', boxShadow: '0 0 8px var(--success-color)' }}></div>
                   NOMINAL
-               </p>
+               </div>
             </div>
          </div>
       </div>

@@ -18,6 +18,7 @@ CREATE TABLE parents (
     verified BOOLEAN DEFAULT FALSE,
     user_type VARCHAR(50) DEFAULT 'parent' CHECK (user_type IN ('parent', 'past_student')),
     dob DATE,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -50,6 +51,7 @@ CREATE TABLE staff (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) CHECK (role IN ('viewer', 'admin', 'super_admin')),
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

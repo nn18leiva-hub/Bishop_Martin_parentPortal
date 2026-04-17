@@ -9,6 +9,7 @@ router.use(authenticate, requireRole('super_admin'));
 router.post('/staff', superAdminController.createStaffUser);
 router.get('/staff', superAdminController.getAllStaffUsers);
 router.delete('/staff/:staff_id', superAdminController.deleteStaffUser);
+router.get('/stats', superAdminController.getDetailedStats);
 
 router.get('/users', superAdminController.getAllPublicUsers);
 router.post('/override-password', superAdminController.overridePassword);

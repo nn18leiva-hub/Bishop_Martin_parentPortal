@@ -93,6 +93,12 @@ const login = async (req, res) => {
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
         const finalType = userType === 'parent' ? user.user_type : userType;
 
+        // Track activity: update last_activity timestamp
+        const activityTable = userType === 'parent' ? 'parents' : 'staff';
+        const activityIdCol = userType === 'parent' ? 'parent_id' : 'staff_id';
+        db.query(`UPDATE ${activityTable} SET last_activity = NOW() WHERE ${activityIdCol} = $1`, [payload.id])
+          .catch(err => console.error('Failed to update activity:', err));
+
         res.json({ message: 'Login successful', token, type: finalType, id: payload.id, role: payload.role });
     } catch (err) {
         console.error(err);
