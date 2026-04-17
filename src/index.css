@@ -267,3 +267,36 @@ a:hover {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Light Mode Overrides */
+body.light-mode {
+  --bg-gradient-start: #f1f5f9;  /* Slate 100 */
+  --bg-gradient-end: #cbd5e1;    /* Slate 300 */
+  --text-main: #0f172a;          /* Slate 900 */
+  --text-muted: #334155;         /* Slate 700 */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .form-input, body.light-mode .form-select {
+  background: rgba(255, 255, 255, 0.8);
+  color: #0f172a;
+}
+body.light-mode .form-select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+body.light-mode .btn-secondary {
+  color: #0f172a;
+  border-color: rgba(0,0,0,0.1);
+}
+body.light-mode .navbar-brand {
+  color: #0f172a;
+}
+body.light-mode a {
+  color: #4338ca;
+}
+body.light-mode a:hover {
+  color: #312e81;
+}

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { UserPlus } from 'lucide-react';
+import ThemeLangToggle from '../components/ThemeLangToggle';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +18,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   
   const { register } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -53,21 +56,24 @@ const Register = () => {
   };
 
   return (
-    <div className="app-container items-center justify-center py-4">
+    <div className="app-container items-center justify-center py-4 relative">
+      <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+        <ThemeLangToggle />
+      </div>
       <div className="glass-panel" style={{ maxWidth: '450px', width: '100%' }}>
         <div className="text-center mb-4">
           <div className="flex justify-center mb-2">
             <UserPlus size={40} color="var(--primary-color)" />
           </div>
-          <h2>Create Account</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Register for the Document Portal</p>
+          <h2>{t('Create Account')}</h2>
+          <p style={{ color: 'var(--text-muted)' }}>{t('Register for the Document Portal')}</p>
         </div>
 
         {error && <div className="error-text text-center mb-3 p-2" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Full Name</label>
+            <label>{t('Full Name')}</label>
             <input 
               type="text" 
               name="full_name"
@@ -79,7 +85,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label>Email Address</label>
+            <label>{t('Email Address')}</label>
             <input 
               type="email" 
               name="email"
@@ -91,7 +97,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label>Phone Number</label>
+            <label>{t('Phone Number')}</label>
             <input 
               type="text" 
               name="phone"
@@ -102,15 +108,15 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label>Role</label>
+            <label>{t('Role')}</label>
             <select name="user_type" className="form-select" value={formData.user_type} onChange={handleChange}>
-              <option value="parent">Parent</option>
-              <option value="past_student">Past Student</option>
+              <option value="parent">{t('Parent')}</option>
+              <option value="past_student">{t('Past Student')}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label>Date of Birth</label>
+            <label>{t('Date of Birth')}</label>
             <input 
               type="date" 
               name="dob"
@@ -121,13 +127,13 @@ const Register = () => {
             />
             {formData.user_type === 'past_student' && (
               <span style={{ fontSize: '0.75rem', color: 'var(--warning-color)', marginTop: '0.25rem' }}>
-                Must be at least 18 years old.
+                {t('Must be at least 18 years old.')}
               </span>
             )}
           </div>
           
           <div className="form-group">
-            <label>Password</label>
+            <label>{t('Password')}</label>
             <input 
               type="password" 
               name="password"
@@ -139,12 +145,12 @@ const Register = () => {
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Register'}
+            {loading ? t('Creating Account...') : t('Register')}
           </button>
         </form>
 
         <div className="text-center mt-3" style={{ fontSize: '0.875rem' }}>
-          Already have an account? <Link to="/login">Sign In</Link>
+          {t('Already have an account?')} <Link to="/login">{t('Sign In')}</Link>
         </div>
       </div>
     </div>

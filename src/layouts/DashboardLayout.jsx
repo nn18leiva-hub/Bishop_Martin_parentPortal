@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { AlertTriangle, LogOut, FileText, UploadCloud, FilePlus } from 'lucide-react';
 import { apiFetch } from '../services/api';
+import ThemeLangToggle from '../components/ThemeLangToggle';
 
 const DashboardLayout = () => {
   const { user, logout, loading, fetchProfile } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [uploadingSsn, setUploadingSsn] = useState(false);
   const [ssnError, setSsnError] = useState('');
@@ -55,13 +58,14 @@ const DashboardLayout = () => {
       <header className="navbar">
         <Link to="/dashboard/parents" className="navbar-brand">
           <FileText size={24} />
-          Bishop Martin Portal
+          {t('Bishop Martin Portal')}
         </Link>
         <div className="flex items-center gap-4">
+          <ThemeLangToggle />
           <span style={{ fontSize: '0.875rem' }}>
-            Hello, {user.full_name} ({user.user_type === 'past_student' ? 'Past Student' : 'Parent'})
+            {t('Hello')}, {user.full_name} ({user.user_type === 'past_student' ? t('Past Student') : t('Parent')})
           </span>
-          <button className="btn-secondary" style={{ padding: '0.5rem', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-main)' }} onClick={handleLogout} title="Logout">
+          <button className="btn-secondary" style={{ padding: '0.5rem', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-main)' }} onClick={handleLogout} title={t('Logout')}>
             <LogOut size={20} />
           </button>
         </div>
@@ -73,15 +77,15 @@ const DashboardLayout = () => {
             <div className="flex items-center gap-2">
               <AlertTriangle size={24} />
               <div>
-                <strong style={{ display: 'block' }}>Identity Verification Required</strong>
-                <span style={{ fontSize: '0.875rem' }}>Your requests are paused. Please upload your ID/SSN card to unlock processing.</span>
+                <strong style={{ display: 'block' }}>{t('Identity Verification Required')}</strong>
+                <span style={{ fontSize: '0.875rem' }}>{t('Your requests are paused. Please upload your ID/SSN card to unlock processing.')}</span>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
                {ssnError && <span style={{ color: '#fff', fontSize: '0.75rem', marginRight: '8px' }}>{ssnError}</span>}
                <label className="btn-primary" style={{ backgroundColor: '#fff', color: 'var(--warning-color)', padding: '0.5rem 1rem', fontSize: '0.875rem', cursor: 'pointer', margin: 0, width: 'auto' }}>
-                 {uploadingSsn ? 'Uploading...' : 'Upload ID'}
+                 {uploadingSsn ? t('Uploading...') : t('Upload ID')}
                  <UploadCloud size={16} />
                  <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleSSNUpload} disabled={uploadingSsn} />
                </label>
