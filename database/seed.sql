@@ -16,8 +16,8 @@ INSERT INTO school_payment_info (bank_name, account_name, account_number, instru
 
 TRUNCATE TABLE staff RESTART IDENTITY CASCADE;
 
--- Default staff accounts (password for all is 'password123' -> $2b$10$QO0j8T/L2yV2w5W8cR7J3ONxQj7iUv5XJ.eU7qJtE4F63eWwF.C hash)
+-- Default staff accounts (password for all is 'password123' -> $2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe hash)
 INSERT INTO staff (full_name, email, password_hash, role) VALUES
-('Principal Viewer', 'principal@bmhs.edu.bz', '$2b$10$QO0j8T/L2yV2w5W8cR7J3ONxQj7iUv5XJ.eU7qJtE4F63eWwF.C', 'viewer'),
-('Default Admin Office', 'office@bmhs.edu.bz', '$2b$10$QO0j8T/L2yV2w5W8cR7J3ONxQj7iUv5XJ.eU7qJtE4F63eWwF.C', 'admin'),
-('System Super Admin', 'superadmin@bmhs.edu.bz', '$2b$10$QO0j8T/L2yV2w5W8cR7J3ONxQj7iUv5XJ.eU7qJtE4F63eWwF.C', 'super_admin');
+('Principal Viewer', 'principal@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'viewer'),
+('Default Admin Office', 'office@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'admin'),
+('System Super Admin', 'superadmin@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'super_admin');

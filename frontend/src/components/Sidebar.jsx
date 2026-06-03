@@ -1,11 +1,17 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Wallet, User, LifeBuoy, Power, FileText } from 'lucide-react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, FileText, ShieldCheck, Users, Archive, LifeBuoy, LogOut, FilePlus, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-
+import schoolLogo from '../assets/school_logo_transparent.png';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const getHomeLink = () => {
     if (user?.role === 'super_admin') return '/superadmin';
@@ -20,78 +26,82 @@ const Sidebar = () => {
     return 'Parent Account';
   };
 
+  const initials = user?.full_name
+    ? user.full_name.split(' ').map(n => n[0]).slice(0, 2).join('')
+    : 'U';
+
   return (
-    <aside className="sidebar desktop-view">
-      <div style={{ marginBottom: '3rem' }}>
-        <Link to={getHomeLink()} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '14px', color: '#fff' }}>
-          <div style={{ background: 'var(--primary-color)', padding: '8px', borderRadius: '12px', boxShadow: '0 0 15px var(--primary-glow)' }}>
-             <FileText size={24} color="#fff" strokeWidth={2.5} />
+    <aside className="db-sidebar desktop-view">
+
+      {/* Brand Header */}
+      <div className="db-sidebar-brand">
+        <Link to={getHomeLink()} className="db-sidebar-brand-link">
+          <img src={schoolLogo} alt="Bishop Martin" className="db-sidebar-logo" />
+          <div>
+            <div className="db-sidebar-brand-name">Admin Portal</div>
+            <div className="db-sidebar-brand-sub">Staff Management</div>
           </div>
-          <span style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.5px' }}>Bishop Martin</span>
         </Link>
       </div>
 
-      <nav style={{ flexGrow: 1 }}>
-        {/* Parent / Past Student Links */}
-        {(user?.type === 'parent' || user?.type === 'past_student') && (
-          <>
-            <NavLink to="/dashboard/parents" end className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-              <LayoutDashboard size={20} strokeWidth={2} />
-              <span>Dashboard</span>
-            </NavLink>
-            <NavLink to="/dashboard/parents/bank-details" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-              <Wallet size={20} strokeWidth={2} />
-              <span>Payments</span>
-            </NavLink>
-          </>
-        )}
+      {/* New Entry Button */}
+      <div className="db-sidebar-new-btn-wrap">
+        <Link to="/dashboard/parents/new" className="db-sidebar-new-btn">
+          <FilePlus size={16} />
+          New Entry
+        </Link>
+      </div>
 
-        {/* Staff Links */}
-        {user?.type === 'staff' && user?.role !== 'super_admin' && (
-          <NavLink to="/staff" end className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <LayoutDashboard size={20} strokeWidth={2} />
-            <span>Staff Portal</span>
-          </NavLink>
-        )}
-
-        {/* SuperAdmin Links */}
-        {user?.role === 'super_admin' && (
-          <NavLink to="/superadmin" end className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <LayoutDashboard size={20} strokeWidth={2} />
-            <span>SuperAdmin</span>
-          </NavLink>
-        )}
-        
-        <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-          <User size={20} strokeWidth={2} />
-          <span>Account Settings</span>
+      {/* Navigation */}
+      <nav className="db-sidebar-nav">
+        <NavLink to="/dashboard/parents" end className={({ isActive }) => `db-sidebar-link ${isActive ? 'active' : ''}`}>
+          <LayoutDashboard size={18} />
+          <span>Dashboard</span>
         </NavLink>
 
-        <NavLink to="/help" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-          <LifeBuoy size={20} strokeWidth={2} />
-          <span>Help Center</span>
+        <NavLink to="/dashboard/parents/documents" className={({ isActive }) => `db-sidebar-link ${isActive ? 'active' : ''}`}>
+          <FileText size={18} />
+          <span>All Documents</span>
+        </NavLink>
+
+        <NavLink to="/dashboard/parents/approval" className={({ isActive }) => `db-sidebar-link ${isActive ? 'active' : ''}`}>
+          <ShieldCheck size={18} />
+          <span>Approval Queue</span>
+        </NavLink>
+
+        <NavLink to="/dashboard/parents/staff-directory" className={({ isActive }) => `db-sidebar-link ${isActive ? 'active' : ''}`}>
+          <Users size={18} />
+          <span>Staff Directory</span>
+        </NavLink>
+
+        <NavLink to="/dashboard/parents/archive" className={({ isActive }) => `db-sidebar-link ${isActive ? 'active' : ''}`}>
+          <Archive size={18} />
+          <span>Archive</span>
         </NavLink>
       </nav>
 
-      <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '1.5rem', padding: '0 0.75rem' }}>
-           <div style={{ width: '42px', height: '42px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'var(--primary-color)' }}>
-              {user?.full_name?.charAt(0) || 'U'}
-           </div>
-           <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: 600, color: '#fff' }}>{user?.full_name || 'User'}</p>
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{getRoleLabel()}</p>
-           </div>
-        </div>
-        
-        <button 
-          onClick={logout}
-          className="sidebar-link" 
-          style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', color: 'var(--danger-color)' }}>
-          <Power size={20} />
-          <span>Disconnect</span>
+      {/* Bottom Section */}
+      <div className="db-sidebar-footer">
+        <NavLink to="/help" className={({ isActive }) => `db-sidebar-link ${isActive ? 'active' : ''}`}>
+          <LifeBuoy size={18} />
+          <span>Help Center</span>
+        </NavLink>
+
+        <button className="db-sidebar-link db-sidebar-signout" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Sign Out</span>
         </button>
+
+        {/* User Info */}
+        <div className="db-sidebar-user">
+          <div className="db-sidebar-avatar">{initials}</div>
+          <div>
+            <div className="db-sidebar-username">{user?.full_name || 'User'}</div>
+            <div className="db-sidebar-userrole">{getRoleLabel()}</div>
+          </div>
+        </div>
       </div>
+
     </aside>
   );
 };

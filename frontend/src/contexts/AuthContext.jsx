@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
          setUser({ type, role, full_name: 'Admin User' });
       } else {
          const data = await apiFetch('/parent/profile');
-         setUser(data);
+         setUser({ ...data, type: data.user_type });
       }
     } catch (err) {
       console.error('Failed to load profile', err);

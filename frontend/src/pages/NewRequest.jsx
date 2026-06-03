@@ -33,12 +33,12 @@ const NewRequest = () => {
 
   const selectedType = DOCUMENT_TYPES.find(d => d.id === parseInt(formData.document_type_id)) || DOCUMENT_TYPES[0];
 
-  const availableTypes = user?.user_type === 'past_student' 
+  const availableTypes = (user?.user_type === 'past_student' || user?.type === 'past_student')
     ? DOCUMENT_TYPES.filter(d => d.name === 'transcript')
     : DOCUMENT_TYPES;
 
   useEffect(() => {
-    if (user?.user_type === 'past_student') {
+    if (user?.user_type === 'past_student' || user?.type === 'past_student') {
       setFormData(prev => ({ ...prev, document_type_id: 5 }));
     }
   }, [user]);
