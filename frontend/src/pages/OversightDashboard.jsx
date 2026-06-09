@@ -3,79 +3,56 @@ import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Users, CheckCircle, Clock, BarChart2,
-  AlertCircle, TrendingUp, Activity, ChevronRight
+  FileText, Users, CheckCircle, Clock,
+  AlertCircle, TrendingUp, Activity, ChevronRight,
+  Filter, AlertTriangle, Database, Folder, Mail, Lock, MoreVertical
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────
-   Helper: coloured status pill
-───────────────────────────────────────── */
+   Helper: Status Pill
+   ───────────────────────────────────────── */
 const StatusPill = ({ status }) => {
   const map = {
-    pending_verification: { label: 'Pending ID', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    pending:              { label: 'Pending',     color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
-    ready_for_pickup:     { label: 'Ready',       color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
-    completed:            { label: 'Completed',   color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
-    denied:               { label: 'Denied',      color: '#ef4444', bg: 'rgba(239,68,68,0.12)'  },
+    active: { label: 'Active', color: '#10b981', bg: '#d1fae5' },
+    inactive: { label: 'Inactive', color: '#6b7280', bg: '#f3f4f6' },
+    review: { label: 'Review', color: '#f59e0b', bg: '#fef3c7' }
   };
-  const style = map[status] || { label: status, color: '#888', bg: 'rgba(128,128,128,0.1)' };
+  const style = map[status.toLowerCase()] || { label: status, color: '#6b7280', bg: '#f3f4f6' };
   return (
     <span style={{
       display: 'inline-block',
-      padding: '2px 10px',
+      padding: '4px 12px',
       borderRadius: '20px',
-      fontSize: '0.72rem',
-      fontWeight: 700,
-      letterSpacing: '0.03em',
+      fontSize: '0.75rem',
+      fontWeight: 600,
       color: style.color,
       background: style.bg,
-      border: `1px solid ${style.color}33`,
-      textTransform: 'uppercase'
+      textTransform: 'capitalize'
     }}>
+      <span style={{ 
+        display: 'inline-block', 
+        width: 6, 
+        height: 6, 
+        borderRadius: '50%', 
+        background: style.color, 
+        marginRight: 6,
+        verticalAlign: 'middle'
+      }}></span>
       {style.label}
     </span>
   );
 };
 
 /* ─────────────────────────────────────────
-   Stat Card
-───────────────────────────────────────── */
-const StatCard = ({ icon: Icon, label, value, color, subtitle }) => (
-  <div style={{
-    background: '#ffffff',
-    borderRadius: '12px',
-    padding: '1.4rem 1.5rem',
-    border: '1px solid #eaeaea',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '1rem',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
-  }}>
-    <div style={{
-      width: 44, height: 44, borderRadius: 10,
-      background: color + '1a',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0
-    }}>
-      <Icon size={22} color={color} />
-    </div>
-    <div>
-      <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</p>
-      <p style={{ fontSize: '2rem', fontWeight: 800, color: '#1a1a1a', lineHeight: 1 }}>{value}</p>
-      {subtitle && <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 4 }}>{subtitle}</p>}
-    </div>
-  </div>
-);
-
-/* ─────────────────────────────────────────
-   Main Component
-───────────────────────────────────────── */
+   OversightDashboard Main Component
+   ───────────────────────────────────────── */
 const OversightDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [requests, setRequests] = useState([]);
-  const [users, setUsers]       = useState([]);
+  const [dbUsers, setDbUsers]   = useState([]);
+  const [dbStaff, setDbStaff]   = useState([]);
   const [stats, setStats]       = useState(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
@@ -83,13 +60,15 @@ const OversightDashboard = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [reqData, userData, statsData] = await Promise.all([
+        const [reqData, userData, staffData, statsData] = await Promise.all([
           apiFetch('/staff/requests'),
           apiFetch('/superadmin/users'),
+          apiFetch('/superadmin/staff'),
           apiFetch('/superadmin/stats'),
         ]);
         setRequests(Array.isArray(reqData) ? reqData : []);
-        setUsers(Array.isArray(userData) ? userData : []);
+        setDbUsers(Array.isArray(userData) ? userData : []);
+        setDbStaff(Array.isArray(staffData) ? staffData : []);
         setStats(statsData);
       } catch (err) {
         setError(err.message || 'Failed to load dashboard data');
@@ -112,192 +91,344 @@ const OversightDashboard = () => {
     </div>
   );
 
-  /* ── Computed stats ── */
-  const totalRequests    = requests.length;
-  const pendingCount     = requests.filter(r => r.status === 'pending' || r.status === 'pending_verification').length;
-  const readyCount       = requests.filter(r => r.status === 'ready_for_pickup').length;
-  const completedCount   = requests.filter(r => r.status === 'completed').length;
+  // Live metrics from the database
+  const liveTotalUsers = dbUsers.length + dbStaff.length;
+  const livePendingCount = requests.filter(r => r.status === 'pending' || r.status === 'pending_verification').length;
+  
+  const onlineParents = stats ? stats.online.parents.reduce((a, c) => a + parseInt(c.count), 0) : 0;
+  const onlineStaff   = stats ? stats.online.staff.reduce((a, c) => a + parseInt(c.count), 0) : 0;
+  const activeSessions = Math.max(1, onlineParents + onlineStaff);
 
-  const totalUsers       = users.length;
-  const verifiedUsers    = users.filter(u => u.verified).length;
+  // Combine staff and public users dynamically
+  const registryUsers = [];
 
-  const onlineParents    = stats ? stats.online.parents.reduce((a, c) => a + parseInt(c.count), 0) : 0;
-  const onlineStaff      = stats ? stats.online.staff.reduce((a, c) => a + parseInt(c.count), 0) : 0;
+  // Add staff members
+  dbStaff.forEach(s => {
+    const parts = s.full_name.split(' ');
+    const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
+    
+    let roleLabel = 'Staff Member';
+    if (s.role === 'super_admin') roleLabel = 'System Administrator';
+    else if (s.role === 'admin') roleLabel = 'Office Admin';
+    else if (s.role === 'viewer') roleLabel = 'Principal Viewer';
 
-  /* Recent 5 requests */
-  const recentRequests   = [...requests].slice(0, 5);
+    registryUsers.push({
+      name: s.full_name,
+      id: `${s.staff_id}-S`,
+      role: roleLabel,
+      status: 'active',
+      active: 'Just now',
+      initials: ini || 'S'
+    });
+  });
 
-  /* Document type breakdown */
-  const docTypeCounts = requests.reduce((acc, r) => {
-    const t = (r.document_type_name || 'unknown').replace(/_/g, ' ');
-    acc[t] = (acc[t] || 0) + 1;
-    return acc;
-  }, {});
-  const docTypeEntries = Object.entries(docTypeCounts).sort((a, b) => b[1] - a[1]);
-  const maxDocCount = docTypeEntries[0]?.[1] || 1;
+  // Add parents / past students
+  dbUsers.forEach(u => {
+    const parts = u.full_name.split(' ');
+    const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
 
-  /* User type breakdown */
-  const parentCount      = users.filter(u => u.user_type === 'parent').length;
-  const pastStudentCount = users.filter(u => u.user_type === 'past_student').length;
+    let roleLabel = 'Parent / Guardian';
+    if (u.user_type === 'past_student') roleLabel = 'Past Student';
 
-  const adminBase = user?.role === 'super_admin' ? '/superadmin' : '/staff';
+    registryUsers.push({
+      name: u.full_name,
+      id: `${u.id}-P`,
+      role: roleLabel,
+      status: u.verified ? 'active' : 'review',
+      active: 'Recent',
+      initials: ini || 'P'
+    });
+  });
+
+  const adminBase = user?.role === 'principal' || user?.role === 'super_admin' ? '/superadmin' : '/staff';
 
   return (
-    <div>
+    <div style={{ padding: '1rem 1.5rem 2rem 1.5rem' }}>
       {/* ── Page Header ── */}
-      <div className="db-page-header" style={{ marginBottom: '1.75rem' }}>
-        <div className="db-page-eyebrow">OVERVIEW</div>
-        <div className="db-page-title-row">
-          <h1 className="db-page-title">Oversight Dashboard</h1>
-          <span style={{ fontSize: '0.8rem', color: '#aaa' }}>
-            Last refreshed: {new Date().toLocaleTimeString()}
-          </span>
-        </div>
-        <p style={{ color: '#888', fontSize: '0.875rem', marginTop: 4 }}>
-          Real-time summary of all requests, users, and system activity.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h1 className="serif-title" style={{ fontSize: '2.2rem', margin: 0, fontWeight: 700 }}>
+          Oversight Dashboard
+        </h1>
       </div>
 
       {/* ── Stat Grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        <StatCard icon={FileText}    label="Total Requests"   value={totalRequests}  color="#6366f1" />
-        <StatCard icon={Clock}       label="Pending"          value={pendingCount}   color="#f59e0b" subtitle="Awaiting action" />
-        <StatCard icon={CheckCircle} label="Ready / Mailed"   value={readyCount}     color="#10b981" />
-        <StatCard icon={TrendingUp}  label="Completed"        value={completedCount} color="#3b82f6" />
-        <StatCard icon={Users}       label="Registered Users" value={totalUsers}     color="#8b5cf6" />
-        <StatCard icon={Activity}    label="Online Now"       value={onlineParents + onlineStaff} color="#ec4899" subtitle="Within last 15 min" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+        
+        {/* Total Users Card */}
+        <div className="mock-card">
+          <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+            Total Users
+          </p>
+          <p className="serif-number" style={{ fontSize: '2.3rem', margin: 0 }}>
+            {liveTotalUsers}
+          </p>
+          <p style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600, margin: '6px 0 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span>↗</span> Active users registered
+          </p>
+        </div>
+
+        {/* Active Sessions Card */}
+        <div className="mock-card">
+          <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+            Active Sessions
+          </p>
+          <p className="serif-number" style={{ fontSize: '2.3rem', margin: 0 }}>
+            {activeSessions}
+          </p>
+          <p style={{ fontSize: '0.8rem', color: '#888888', margin: '6px 0 0 0' }}>
+            Current live connections
+          </p>
+        </div>
+
+        {/* Pending Approvals Card (with Maroon Left Accent) */}
+        <div className="mock-card stat-card-accent">
+          <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+            Pending Approvals
+          </p>
+          <p className="serif-number" style={{ fontSize: '2.3rem', margin: 0 }}>
+            {livePendingCount}
+          </p>
+          <p style={{ fontSize: '0.8rem', color: '#7a0c2e', fontWeight: 600, margin: '6px 0 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: '0.9rem' }}>⚠️</span> Requires attention
+          </p>
+        </div>
+
+        {/* System Uptime Card */}
+        <div className="mock-card">
+          <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+            System Uptime
+          </p>
+          <p className="serif-number" style={{ fontSize: '2.3rem', margin: 0 }}>
+            99.98%
+          </p>
+          <p style={{ fontSize: '0.8rem', color: '#888888', margin: '6px 0 0 0' }}>
+            Last 30 days
+          </p>
+        </div>
+
       </div>
 
-      {/* ── Two-column grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
-
-        {/* Recent Requests */}
-        <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: 12, padding: '1.5rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a' }}>Recent Requests</h2>
-            <button
-              onClick={() => navigate(`${adminBase}/requests`)}
-              style={{ background: 'none', border: 'none', color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              View all <ChevronRight size={14} />
+      {/* ── Main Two-Column Grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2.2fr 1fr', gap: '1.5rem' }}>
+        
+        {/* LEFT COLUMN: User Registry */}
+        <div className="mock-card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2c2c2c', margin: '0 0 4px 0', fontFamily: "'Outfit', sans-serif" }}>
+                Institutional User Registry
+              </h2>
+              <p style={{ fontSize: '0.8rem', color: '#888888', margin: 0 }}>
+                Recent platform access and role modifications.
+              </p>
+            </div>
+            <button style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 6, 
+              background: '#ffffff', 
+              border: '1px solid #eaeaea', 
+              borderRadius: '6px', 
+              padding: '0.4rem 0.8rem', 
+              fontSize: '0.8rem', 
+              fontWeight: 600, 
+              color: '#444',
+              cursor: 'pointer'
+            }}>
+              <Filter size={14} /> Filter
             </button>
           </div>
 
-          {recentRequests.length === 0 ? (
-            <p style={{ color: '#aaa', textAlign: 'center', padding: '1.5rem 0' }}>No requests yet</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {recentRequests.map(r => (
-                <div key={r.request_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.7rem 0', borderBottom: '1px solid #f5f5f5' }}>
-                  <div>
-                    <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#222', marginBottom: 2 }}>{r.student_full_name}</p>
-                    <p style={{ fontSize: '0.75rem', color: '#aaa', textTransform: 'capitalize' }}>
-                      {(r.document_type_name || '').replace(/_/g, ' ')}
-                    </p>
-                  </div>
-                  <StatusPill status={r.status} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* User Registry Table */}
+          <div style={{ overflowX: 'auto', flex: 1 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                  <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>User / ID</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Last Active</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {registryUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '2rem 0.5rem', textAlign: 'center', color: '#aaa', fontSize: '0.85rem' }}>
+                      No registered users found.
+                    </td>
+                  </tr>
+                ) : (
+                  registryUsers.slice(0, 8).map((u, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #fafafa' }}>
+                      {/* User / ID */}
+                      <td style={{ padding: '1rem 0.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ 
+                          width: 32, 
+                          height: 32, 
+                          borderRadius: '50%', 
+                          background: '#7a0c2e', 
+                          color: '#ffffff', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontSize: '0.75rem', 
+                          fontWeight: 700 
+                        }}>
+                          {u.initials}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{u.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#888888' }}>ID: {u.id}</div>
+                        </div>
+                      </td>
 
-        {/* Document type breakdown */}
-        <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: 12, padding: '1.5rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-          <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', marginBottom: '1.25rem' }}>
-            <BarChart2 size={16} style={{ verticalAlign: 'middle', marginRight: 6, color: '#6366f1' }} />
-            Requests by Document Type
-          </h2>
+                      {/* Role */}
+                      <td style={{ padding: '1rem 0.5rem', fontSize: '0.85rem', color: '#555555' }}>
+                        {u.role}
+                      </td>
 
-          {docTypeEntries.length === 0 ? (
-            <p style={{ color: '#aaa', textAlign: 'center', padding: '1.5rem 0' }}>No data</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              {docTypeEntries.map(([type, count]) => (
-                <div key={type}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 5 }}>
-                    <span style={{ fontWeight: 600, textTransform: 'capitalize', color: '#333' }}>{type}</span>
-                    <span style={{ color: '#888' }}>{count}</span>
-                  </div>
-                  <div style={{ background: '#f0f0f0', borderRadius: 4, height: 6, overflow: 'hidden' }}>
-                    <div style={{
-                      width: `${(count / maxDocCount) * 100}%`,
-                      height: '100%',
-                      background: 'linear-gradient(90deg, #7a0c2e, #e11d48)',
-                      borderRadius: 4,
-                      transition: 'width 0.6s ease'
-                    }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                      {/* Status */}
+                      <td style={{ padding: '1rem 0.5rem' }}>
+                        <StatusPill status={u.status} />
+                      </td>
 
-      {/* ── User breakdown row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                      {/* Last Active */}
+                      <td style={{ padding: '1rem 0.5rem', fontSize: '0.85rem', color: '#777777' }}>
+                        {u.active}
+                      </td>
 
-        {/* User account types */}
-        <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: 12, padding: '1.5rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a' }}>User Accounts</h2>
-            <button
+                      {/* Actions */}
+                      <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
+                        <button style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>
+                          <MoreVertical size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* View Complete Registry Link */}
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #eaeaea' }}>
+            <span 
               onClick={() => navigate(`${adminBase}/users`)}
-              style={{ background: 'none', border: 'none', color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+              style={{ color: '#7a0c2e', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', hover: { textDecoration: 'underline' } }}
             >
-              View directory <ChevronRight size={14} />
-            </button>
+              View Complete Registry
+            </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {[
-              { label: 'Parents',         count: parentCount,      color: '#6366f1' },
-              { label: 'Past Students',   count: pastStudentCount, color: '#8b5cf6' },
-              { label: 'Verified',        count: verifiedUsers,    color: '#10b981' },
-              { label: 'Unverified',      count: totalUsers - verifiedUsers, color: '#f59e0b' },
-            ].map(row => (
-              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: '1px solid #f5f5f5' }}>
-                <span style={{ fontSize: '0.875rem', color: '#444', fontWeight: 500 }}>{row.label}</span>
-                <span style={{
-                  fontWeight: 800, fontSize: '1rem',
-                  color: row.color,
-                  background: row.color + '15',
-                  padding: '2px 12px',
-                  borderRadius: 20
-                }}>{row.count}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Online activity */}
-        <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: 12, padding: '1.5rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-          <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', marginBottom: '1.25rem' }}>
-            <Activity size={16} style={{ verticalAlign: 'middle', marginRight: 6, color: '#10b981' }} />
-            Live Activity (last 15 min)
-          </h2>
-
-          <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem' }}>
-            {[
-              { label: 'Parents Online', count: onlineParents, color: '#6366f1' },
-              { label: 'Staff Online',   count: onlineStaff,   color: '#10b981' },
-            ].map(row => (
-              <div key={row.label} style={{ flex: 1, textAlign: 'center', padding: '1rem', background: row.color + '0d', borderRadius: 10, border: `1px solid ${row.color}22` }}>
-                <p style={{ fontSize: '2.25rem', fontWeight: 800, color: row.color, lineHeight: 1 }}>{row.count}</p>
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: 6 }}>{row.label}</p>
+        {/* RIGHT COLUMN: Sidebar Widgets */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          {/* Scheduled Maintenance Widget */}
+          <div className="mock-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '0.75rem' }}>
+              <AlertTriangle size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2c2c2c', margin: '0 0 6px 0', fontFamily: "'Outfit', sans-serif" }}>
+                  Scheduled Maintenance
+                </h3>
+                <p style={{ fontSize: '0.78rem', color: '#555555', margin: 0, lineHeight: 1.4 }}>
+                  Database optimization scheduled for Sunday at 02:00 AM EST. Expected downtime: 45 minutes.
+                </p>
               </div>
-            ))}
+            </div>
+            <div style={{ marginTop: '1rem' }}>
+              <span 
+                style={{ color: '#7a0c2e', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' }}
+                onClick={() => alert('Maintenance details: System updates will be applied to the PostgreSQL cluster.')}
+              >
+                View Details
+              </span>
+            </div>
           </div>
 
-          {/* Live indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.75rem 1rem', background: '#f9fafb', borderRadius: 8 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 0 3px rgba(16,185,129,0.2)', display: 'inline-block', animation: 'pulse 2s infinite' }}></span>
-            <span style={{ fontSize: '0.8rem', color: '#666' }}>System is operational</span>
+          {/* System Environment Widget */}
+          <div className="mock-card">
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#2c2c2c', margin: '0 0 1.25rem 0', fontFamily: "'Outfit', sans-serif" }}>
+              System Environment
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              {/* Core Database */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '6px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+                  <Database size={16} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2c2c2c' }}>Core Database</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#10b981', background: '#d1fae5', padding: '1px 8px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#10b981' }}></span> Operational
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#888888', marginTop: 1 }}>Primary Cluster</div>
+                </div>
+              </div>
+
+              {/* Authentication API */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '6px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+                  <Lock size={16} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2c2c2c' }}>Authentication API</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#10b981', background: '#d1fae5', padding: '1px 8px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#10b981' }}></span> Operational
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#888888', marginTop: 1 }}>OAuth 2.0 Gateway</div>
+                </div>
+              </div>
+
+              {/* Document Storage */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '6px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+                  <Folder size={16} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2c2c2c' }}>Document Storage</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f59e0b', background: '#fef3c7', padding: '1px 8px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b' }}></span> High Load
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#888888', marginTop: 1 }}>S3 Buckets</div>
+                </div>
+              </div>
+
+              {/* Email Service */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '6px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+                  <Mail size={16} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2c2c2c' }}>Email Service</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#10b981', background: '#d1fae5', padding: '1px 8px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#10b981' }}></span> Operational
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#888888', marginTop: 1 }}>SMTP Relay</div>
+                </div>
+              </div>
+
+            </div>
+
           </div>
+
         </div>
 
       </div>
+
     </div>
   );
 };

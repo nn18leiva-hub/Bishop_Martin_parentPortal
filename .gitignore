@@ -28,3 +28,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# Browser profiles
+edge_dev_profile/

@@ -109,7 +109,7 @@ const OverrideModal = ({ target, onClose, onSuccess }) => {
 ────────────────────────────────────────── */
 const UserDirectory = () => {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+  const isSuperAdmin = user?.role === 'principal' || user?.role === 'staff' || user?.role === 'super_admin' || user?.role === 'admin';
 
   const [users, setUsers]             = useState([]);
   const [loading, setLoading]         = useState(true);
@@ -202,9 +202,8 @@ const UserDirectory = () => {
 
       {/* Page Header */}
       <div className="db-page-header" style={{ marginBottom: '1.75rem' }}>
-        <div className="db-page-eyebrow">ADMINISTRATION</div>
-        <div className="db-page-title-row">
-          <h1 className="db-page-title">User Directory</h1>
+        <div className="db-page-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 className="db-page-title serif-title" style={{ fontSize: '2.2rem', margin: 0, fontWeight: 700 }}>User Directory</h1>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={exportCSV}

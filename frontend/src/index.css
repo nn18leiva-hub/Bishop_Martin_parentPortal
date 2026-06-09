@@ -1752,3 +1752,38 @@ select:-webkit-autofill:focus {
   0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
   50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
 }
+
+/* ---- Visual Alignment & Theme Styling ---- */
+.serif-title {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: #7a0c2e;
+  font-weight: 700;
+}
+
+.serif-number {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.db-sidebar-link.active {
+  background-color: #7a0c2e !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border: none !important;
+  border-radius: 6px !important;
+}
+
+/* Custom dashboard styles matching mockup */
+.mock-card {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.stat-card-accent {
+  border-left: 4px solid #7a0c2e !important;
+}
+

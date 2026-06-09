@@ -1,7 +1,7 @@
 import React from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, Settings } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import MobileNav from '../components/MobileNav';
 
@@ -27,6 +27,16 @@ const AdminLayout = () => {
     );
   }
 
+  const location = useLocation();
+  const normalizedPath = location.pathname.replace(/\/$/, '');
+  const hasLocalHeader = [
+    '/superadmin/settings',
+    '/staff/settings',
+    '/superadmin/requests',
+    '/staff/requests',
+    '/staff'
+  ].includes(normalizedPath);
+
   if (!user) return null;
 
   return (
@@ -37,21 +47,24 @@ const AdminLayout = () => {
       {/* Main Area */}
       <div className="db-main">
         {/* Top Header Bar */}
-        <header className="adm-topbar">
-          <div className="adm-topbar-title">Bishop Martin Parent Portal</div>
-          <div className="adm-topbar-actions">
-            <div className="adm-topbar-search">
-              <Search size={15} color="#aaa" />
-              <input type="text" placeholder="Search records..." />
+        {!hasLocalHeader && (
+          <header className="adm-topbar" style={{ background: 'transparent', borderBottom: 'none', padding: '1.5rem 2.5rem 0.5rem 2.5rem', height: 'auto' }}>
+            <div className="adm-topbar-title" style={{ visibility: 'hidden' }}>Bishop Martin Parent Portal</div>
+            <div className="adm-topbar-actions" style={{ marginLeft: 'auto', gap: '1rem' }}>
+              <div className="adm-topbar-search" style={{ background: '#f5f5f5', border: '1px solid #eaeaea', borderRadius: '20px', padding: '0.4rem 1rem' }}>
+                <Search size={15} color="#888" />
+                <input type="text" placeholder="Search records..." style={{ fontFamily: "'Outfit', sans-serif" }} />
+              </div>
+              <button className="adm-topbar-icon-btn" aria-label="Notifications" style={{ border: 'none', background: 'none', color: '#666', position: 'relative', width: 'auto', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Bell size={20} />
+                <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#7a0c2e' }}></span>
+              </button>
+              <button className="adm-topbar-icon-btn" aria-label="Settings" style={{ border: 'none', background: 'none', color: '#666', width: 'auto', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Settings size={20} />
+              </button>
             </div>
-            <button className="adm-topbar-icon-btn" aria-label="Notifications">
-              <Bell size={18} />
-            </button>
-            <div className="adm-topbar-avatar">
-              {user?.full_name?.split(' ').map(n => n[0]).slice(0, 2).join('') || 'U'}
-            </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Page Content */}
         <div className="db-content">

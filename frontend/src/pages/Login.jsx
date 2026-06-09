@@ -27,11 +27,11 @@ const Login = () => {
       if (res.type === 'parent' || res.type === 'past_student') {
          navigate('/dashboard/parents');
       } else if (res.type === 'staff') {
-         if (res.role === 'super_admin') {
-           navigate('/superadmin');
-         } else { // admin or viewer
-           navigate('/staff');
-         }
+          if (res.role === 'super_admin' || res.role === 'principal') {
+            navigate('/superadmin');
+          } else { // admin or viewer
+            navigate('/staff');
+          }
       } else {
          setError('Unknown user type.');
       }

@@ -15,8 +15,8 @@ router.get('/users', superAdminController.getAllPublicUsers);
 // Write routes - restricted to admin and super_admin (viewers blocked by roleMiddleware)
 router.post('/override-password', superAdminController.overridePassword);
 
-// Super admin only - staff creation and deletion
-router.post('/staff', requireRole('super_admin'), superAdminController.createStaffUser);
-router.delete('/staff/:staff_id', requireRole('super_admin'), superAdminController.deleteStaffUser);
+// Staff creation and deletion (Principal and Office staff authorized)
+router.post('/staff', requireRole('staff'), superAdminController.createStaffUser);
+router.delete('/staff/:staff_id', requireRole('staff'), superAdminController.deleteStaffUser);
 
 module.exports = router;

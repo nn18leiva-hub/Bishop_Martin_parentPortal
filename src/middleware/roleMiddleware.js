@@ -20,17 +20,13 @@ const requireRole = (requiredRole) => {
 
         // Broad staff actions (like fetching requests or verifying)
         if (requiredRole === 'staff') {
-            // Rigid VIEWER sandbox preventing creation, updates, and deletes system-wide
-            if (role === 'viewer' && req.method !== 'GET') {
-                return res.status(403).json({ message: 'Access denied. Viewers are restricted to strictly read-only mode.' });
-            }
             return next();
         }
 
-        // 3. Super Admin strict lock (for creation and deletion mechanics)
-        if (requiredRole === 'super_admin') {
-            if (role !== 'super_admin') {
-                return res.status(403).json({ message: 'Access denied. Super Admin tier authorization required.' });
+        // 3. Super Admin / Principal strict lock (for creation and deletion mechanics)
+        if (requiredRole === 'super_admin' || requiredRole === 'principal') {
+            if (role !== 'super_admin' && role !== 'principal') {
+                return res.status(403).json({ message: 'Access denied. Principal tier authorization required.' });
             }
             return next();
         }

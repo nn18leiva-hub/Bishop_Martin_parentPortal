@@ -15,8 +15,8 @@ const DashboardLayout = () => {
   React.useEffect(() => {
     if (!loading) {
       if (!user) navigate('/login');
-      if (user?.type === 'staff' || user?.role === 'super_admin') {
-        navigate(user?.role === 'super_admin' ? '/superadmin' : '/staff');
+      if (user?.type === 'staff' || user?.role === 'super_admin' || user?.role === 'principal') {
+        navigate(user?.role === 'super_admin' || user?.role === 'principal' ? '/superadmin' : '/staff');
       }
     }
   }, [user, loading, navigate]);

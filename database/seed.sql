@@ -18,6 +18,5 @@ TRUNCATE TABLE staff RESTART IDENTITY CASCADE;
 
 -- Default staff accounts (password for all is 'password123' -> $2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe hash)
 INSERT INTO staff (full_name, email, password_hash, role) VALUES
-('Principal Viewer', 'principal@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'viewer'),
-('Default Admin Office', 'office@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'admin'),
-('System Super Admin', 'superadmin@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'super_admin');
+('Default Staff Office', 'office@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'staff'),
+('System Principal', 'principal@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'principal');

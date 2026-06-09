@@ -43,7 +43,7 @@ function App() {
             <Route path="requests" element={<StaffDashboard />} />
             <Route path="verification" element={<ComingSoon />} />
             <Route path="users" element={<UserDirectory />} />
-            <Route path="settings" element={<ComingSoon />} />
+            <Route path="settings" element={<SuperAdminDashboard />} />
           </Route>
 
           {/* Administrative Routes - Super Admin */}
