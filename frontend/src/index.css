@@ -1641,3 +1641,114 @@ select:-webkit-autofill:focus {
 .db-error-text {
   color: #cc0000;
 }
+
+/* ---- User Directory Table ---- */
+.ud-table {
+  display: table;
+}
+.ud-mobile {
+  display: none;
+}
+@media (max-width: 680px) {
+  .ud-table {
+    display: none;
+  }
+  .ud-mobile {
+    display: block;
+  }
+}
+
+/* ---- Loading Spinner ---- */
+.db-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #7a0c2e;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Admin Topbar ---- */
+.adm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+.adm-topbar-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #333;
+}
+.adm-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.adm-topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f5f5f5;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+}
+.adm-topbar-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  color: #333;
+  width: 160px;
+}
+.adm-topbar-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #eaeaea;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.15s;
+}
+.adm-topbar-icon-btn:hover { background: #f5f5f5; }
+.adm-topbar-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #7a0c2e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* ---- Toast Animation ---- */
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ---- Pulse dot ---- */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+}

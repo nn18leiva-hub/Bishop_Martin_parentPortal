@@ -12,6 +12,8 @@ import NewRequest from './pages/NewRequest';
 import BankDetails from './pages/BankDetails';
 import StaffDashboard from './pages/StaffDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import OversightDashboard from './pages/OversightDashboard';
+import UserDirectory from './pages/UserDirectory';
 import SharedLayout from './layouts/SharedLayout';
 import Profile from './pages/Profile';
 import ComingSoon from './pages/ComingSoon';
@@ -35,13 +37,22 @@ function App() {
             <Route path="bank-details" element={<BankDetails />} />
           </Route>
           
-          {/* Administrative Routes */}
+          {/* Administrative Routes - Staff */}
           <Route path="/staff" element={<AdminLayout />}>
             <Route index element={<StaffDashboard />} />
+            <Route path="requests" element={<StaffDashboard />} />
+            <Route path="verification" element={<ComingSoon />} />
+            <Route path="users" element={<UserDirectory />} />
+            <Route path="settings" element={<ComingSoon />} />
           </Route>
-          
+
+          {/* Administrative Routes - Super Admin */}
           <Route path="/superadmin" element={<AdminLayout />}>
-            <Route index element={<SuperAdminDashboard />} />
+            <Route index element={<OversightDashboard />} />
+            <Route path="requests" element={<StaffDashboard />} />
+            <Route path="verification" element={<ComingSoon />} />
+            <Route path="users" element={<UserDirectory />} />
+            <Route path="settings" element={<SuperAdminDashboard />} />
           </Route>
           
           {/* Shared Settings & Help Routes */}

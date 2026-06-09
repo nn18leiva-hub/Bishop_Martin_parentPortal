@@ -38,6 +38,7 @@ const StaffDashboard = () => {
     }
   }, [user]);
 
+  // Allow all staff types (admin, viewer, super_admin are all type='staff')
   if (!user || user.type !== 'staff') return null;
 
   const handleLogout = () => {
