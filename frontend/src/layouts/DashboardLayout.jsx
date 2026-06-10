@@ -70,7 +70,20 @@ const DashboardLayout = () => {
         zIndex: 100
       }}>
         {/* Brand */}
-        <Link to="/dashboard/parents" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+        <Link 
+          to="/dashboard/parents" 
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('/dashboard/parents');
+          }}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px', 
+            textDecoration: 'none',
+            cursor: 'pointer'
+          }}
+        >
           <img src={schoolLogo} alt="Logo" style={{ width: 32, height: 32 }} />
           <span style={{
             fontSize: '1.25rem',

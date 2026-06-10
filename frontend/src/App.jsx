@@ -35,6 +35,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="new" element={<NewRequest />} />
             <Route path="bank-details" element={<BankDetails />} />
+            <Route path="records" element={<ComingSoon />} />
           </Route>
           
           {/* Administrative Routes - Staff */}
