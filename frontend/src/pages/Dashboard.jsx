@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 import { FilePlus, Clock, CheckCircle, AlertCircle, ChevronRight, UploadCloud } from 'lucide-react';
 
 const DOCUMENT_TYPES = [
-  { id: 1, name: 'lateness_form', label: 'Lateness Form', is_auto_generated: true, requires_payment: false },
-  { id: 2, name: 'absence_form', label: 'Absence Form', is_auto_generated: true, requires_payment: false },
-  { id: 3, name: 'permission_slip', label: 'Permission Slip', is_auto_generated: true, requires_payment: false },
-  { id: 4, name: 'enrolment_letter', label: 'Enrolment Letter', is_auto_generated: false, requires_payment: true },
-  { id: 5, name: 'transcript', label: 'Transcript', is_auto_generated: false, requires_payment: true },
+  { id: 1, name: 'transcript', label: 'Official Transcript', is_auto_generated: false, requires_payment: true },
+  { id: 2, name: 'enrollment_verification', label: 'Enrollment Verification', is_auto_generated: true, requires_payment: false },
+  { id: 3, name: 'disciplinary_record', label: 'Disciplinary Record', is_auto_generated: true, requires_payment: false },
+  { id: 4, name: 'duplicate_diploma', label: 'Duplicate Diploma', is_auto_generated: false, requires_payment: true },
+  { id: 5, name: 'custom_request', label: 'Custom Request', is_auto_generated: false, requires_payment: true },
 ];
 
 const genRef = (id) => `REFERENCE: ${String(id).padStart(3, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;

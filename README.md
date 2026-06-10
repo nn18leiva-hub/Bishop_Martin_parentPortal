@@ -57,6 +57,20 @@ The access control system has been simplified from 4 tiers to 2 distinct staff t
 - **Duplicate Header Prevention**:
   - `AdminLayout.jsx` automatically detects pages carrying local header bars (such as the requests and registry dashboards) and suppresses the global topbar actions to prevent duplicate search inputs and icon groups on desktop.
 
+### 📋 Parent Portal & 5-Step Request Wizard
+- **Desktop Top Navigation Shell**:
+  - Moves from sidebar layout on mobile to a modern, horizontal top header navigation on desktop.
+  - Displays dynamic links for `Documents`, `Records`, `Payments`, and `Support` with active states.
+  - Quick action "+ New Request" button and letters-avatar displaying current parent's initials.
+- **Interactive 5-Step Stepper Wizard**:
+  - **Step 1: Document Type**: Choice between Transcript ($15), Enrollment Verification (Free), Disciplinary Record (Free), Duplicate Diploma ($35), and Custom Request (TBD).
+  - **Step 2: Student Profile**: Toggle between mock student profile cards (Eleanor Vance / Theodore Hayes) and manual custom data entry.
+  - **Step 3: Delivery Format & Processing Speed**: Select Office Pickup, Email, or Mailing (expands Recipient shipping fields). Choose Standard or Priority speed. Live **Order Summary** recalculates fees.
+  - **Step 4: Invoice Review & Release Authorization**: Detailed fee breakdown invoice table and mandatory data release authorization checkbox.
+  - **Step 5: Electronic Signature Pad**: Legal electronic signature agreement checkbox and a Maroon ink signature canvas pad (using `react-signature-canvas`).
+- **Dynamic Payment Routing**:
+  - Submitting a document request with a fee automatically routes parents to the **Payments** tab (`/dashboard/parents/bank-details`) to upload bank transfers, while free requests redirect directly back to the main dashboard.
+
 ### 🔑 Local Credentials
 - **Principal**: `principal@bmhs.edu.bz` / `password123`
 - **Staff Office**: `office@bmhs.edu.bz` / `password123`

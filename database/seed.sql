@@ -3,11 +3,11 @@
 TRUNCATE TABLE document_types RESTART IDENTITY CASCADE;
 
 INSERT INTO document_types (name, description, is_auto_generated, requires_payment) VALUES
-('lateness_form', 'Lateness Form (Auto-generated slip)', TRUE, FALSE),
-('absence_form', 'Absence Form (Auto-generated slip)', TRUE, FALSE),
-('permission_slip', 'Permission Slip (Auto-generated)', TRUE, FALSE),
-('enrolment_letter', 'Enrolment Letter', FALSE, TRUE),
-('transcript', 'Transcript', FALSE, TRUE);
+('transcript', 'Official Transcript - Certified copy of student record', FALSE, TRUE),
+('enrollment_verification', 'Enrollment Verification - Official letter verifying status', TRUE, FALSE),
+('disciplinary_record', 'Disciplinary Record - Summary of disciplinary history', TRUE, FALSE),
+('duplicate_diploma', 'Duplicate Diploma - Replacement copy of graduation diploma', FALSE, TRUE),
+('custom_request', 'Custom Request - Specific letters or forms', FALSE, TRUE);
 
 TRUNCATE TABLE school_payment_info RESTART IDENTITY CASCADE;
 
