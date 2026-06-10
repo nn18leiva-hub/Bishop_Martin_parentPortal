@@ -73,8 +73,12 @@ const DashboardLayout = () => {
         <Link 
           to="/dashboard/parents" 
           onClick={(e) => {
-            e.preventDefault();
-            navigate('/dashboard/parents');
+            if (window.location.pathname === '/dashboard/parents') {
+              window.location.reload();
+            } else {
+              e.preventDefault();
+              navigate('/dashboard/parents');
+            }
           }}
           style={{ 
             display: 'flex', 
