@@ -1366,10 +1366,10 @@ select:-webkit-autofill:focus {
 }
 
 .db-page-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.85rem;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 2.2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #7a0c2e;
 }
 
 .db-page-actions {
@@ -1456,8 +1456,8 @@ select:-webkit-autofill:focus {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #fdf5f6;
-  color: #7a0c2e;
+  background: #fdfaf2;
+  color: #cca43b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1465,10 +1465,10 @@ select:-webkit-autofill:focus {
 }
 
 .db-section-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1rem;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #7a0c2e;
 }
 
 .db-view-all-link {
@@ -1551,9 +1551,9 @@ select:-webkit-autofill:focus {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 0.25rem 0.65rem;
-  border-radius: 4px;
-  font-size: 0.72rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;

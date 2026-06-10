@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
 import { Link } from 'react-router-dom';
-import { FilePlus, Clock, CheckCircle, AlertCircle, ChevronRight, UploadCloud } from 'lucide-react';
+import { FilePlus, Clock, CheckCircle, AlertCircle, ArrowRight, UploadCloud } from 'lucide-react';
 
 const DOCUMENT_TYPES = [
   { id: 1, name: 'transcript', label: 'Official Transcript', is_auto_generated: false, requires_payment: true },
@@ -11,7 +11,17 @@ const DOCUMENT_TYPES = [
   { id: 5, name: 'custom_request', label: 'Custom Request', is_auto_generated: false, requires_payment: true },
 ];
 
-const genRef = (id) => `REFERENCE: ${String(id).padStart(3, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+const getRefPrefix = (typeName) => {
+  if (!typeName) return 'REF';
+  const name = typeName.toLowerCase();
+  if (name.includes('transcript')) return 'TR';
+  if (name.includes('enrollment')) return 'EV';
+  if (name.includes('disciplinary')) return 'DR';
+  if (name.includes('diploma')) return 'DD';
+  return 'CR';
+};
+
+const genRef = (id, typeName) => `REFERENCE #${getRefPrefix(typeName)}-${String(id).padStart(4, '0')}`;
 
 const Dashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -63,16 +73,16 @@ const Dashboard = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'issued':
-        return <span className="db-badge db-badge-issued"><CheckCircle size={11} /> Issued</span>;
+        return <span className="db-badge db-badge-issued"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> ISSUED</span>;
+      case 'ready_for_pickup':
+        return <span className="db-badge db-badge-issued"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> READY</span>;
       case 'processing':
-        return <span className="db-badge db-badge-processing"><Clock size={11} /> Processing</span>;
+        return <span className="db-badge db-badge-processing"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> PROCESSING</span>;
       case 'pending_verification':
       case 'pending':
-        return <span className="db-badge db-badge-action"><AlertCircle size={11} /> Action Required</span>;
-      case 'ready_for_pickup':
-        return <span className="db-badge db-badge-issued"><CheckCircle size={11} /> Ready</span>;
+        return <span className="db-badge db-badge-action"><span style={{ marginRight: '4px', fontWeight: 900 }}>!</span> ACTION REQUIRED</span>;
       default:
-        return <span className="db-badge db-badge-processing"><Clock size={11} /> {status}</span>;
+        return <span className="db-badge db-badge-processing"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> {status.toUpperCase()}</span>;
     }
   };
 
@@ -104,7 +114,7 @@ const Dashboard = () => {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
           <div>
-            <div className="db-active-banner-count">{activeCount} active request{activeCount !== 1 ? 's' : ''}</div>
+            <div className="db-active-banner-count">{activeCount} ACTIVE REQUESTS</div>
             <div className="db-active-banner-sub">Awaiting processing or action</div>
           </div>
         </div>
@@ -120,7 +130,7 @@ const Dashboard = () => {
             <h2 className="db-section-title">Recent Document Requests</h2>
           </div>
           <Link to="/dashboard/parents/new" className="db-view-all-link">
-            View All <ChevronRight size={15} />
+            View All <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -143,10 +153,10 @@ const Dashboard = () => {
               <table className="db-table">
                 <thead>
                   <tr>
-                    <th>Document Type</th>
-                    <th>Student</th>
-                    <th>Date Requested</th>
-                    <th>Status</th>
+                    <th>DOCUMENT TYPE</th>
+                    <th>STUDENT</th>
+                    <th>DATE REQUESTED</th>
+                    <th>STATUS</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -155,7 +165,7 @@ const Dashboard = () => {
                     <tr key={req.request_id}>
                       <td>
                         <div className="db-doc-name">{req.document_type_name}</div>
-                        <div className="db-doc-ref">{genRef(req.request_id)}</div>
+                        <div className="db-doc-ref">{genRef(req.request_id, req.document_type_name)}</div>
                       </td>
                       <td className="db-student-name">{req.student_full_name}</td>
                       <td className="db-date">{new Date(req.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
@@ -176,7 +186,7 @@ const Dashboard = () => {
 
             {/* Footer note */}
             <div className="db-table-footer-note">
-              Document requests are typically processed within 2–5 business days. For urgent matters, please contact the registrar's office.
+              Document requests are typically processed within 3-5 business days. For urgent matters, please contact the registrar's office.
             </div>
           </>
         )}
