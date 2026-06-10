@@ -31,8 +31,8 @@ const DOCUMENT_TYPES = [
 ];
 
 const STUDENT_PROFILES = [
-  { id: 'eleanor', name: 'Eleanor Vance', bemis: 'STU-9824', grade: 'Grade 10', color: '#7a0c2e' },
-  { id: 'theodore', name: 'Theodore Hayes', bemis: 'STU-7511', grade: 'Grade 8', color: '#1e3a8a' },
+  { id: 'eleanor', name: 'Eleanor Vance', bemis: 'STU-9824', grade: 'Sophomore', color: '#7a0c2e' },
+  { id: 'theodore', name: 'Theodore Hayes', bemis: 'STU-7511', grade: 'Freshman', color: '#1e3a8a' },
 ];
 
 const NewRequest = () => {
@@ -51,7 +51,7 @@ const NewRequest = () => {
     selected_profile_id: isPastStudent ? 'self' : 'eleanor', // 'eleanor', 'theodore', 'custom', or 'self'
     student_full_name: isPastStudent ? user?.full_name || '' : 'Eleanor Vance',
     student_bemis_id: isPastStudent ? 'STU-1000' : 'STU-9824',
-    student_graduation_year_or_years_attended: isPastStudent ? '2024' : 'Grade 10',
+    student_graduation_year_or_years_attended: isPastStudent ? '2024' : 'Sophomore',
     delivery_method: 'pickup', // 'pickup', 'mailed', 'emailed'
     delivery_speed: 'standard', // 'standard', 'priority'
     recipient_name: '',
@@ -106,7 +106,7 @@ const NewRequest = () => {
         student_source: 'custom',
         student_full_name: '',
         student_bemis_id: '',
-        student_graduation_year_or_years_attended: '',
+        student_graduation_year_or_years_attended: 'Freshman',
       }));
     } else {
       const prof = STUDENT_PROFILES.find(p => p.id === profileId);
@@ -544,20 +544,42 @@ const NewRequest = () => {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#444' }}>
-                    {isPastStudent ? 'Graduation Year' : 'Grade Level / Years Attended'}
-                  </label>
-                  <input 
-                    type="text" 
-                    name="student_graduation_year_or_years_attended" 
-                    className="form-input" 
-                    placeholder="e.g. Grade 10 or 2024" 
-                    value={formData.student_graduation_year_or_years_attended} 
-                    onChange={handleInputChange} 
-                    style={{ background: '#ffffff', color: '#333', border: '1px solid #ccc' }}
-                  />
-                </div>
+                {isPastStudent ? (
+                  <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#444' }}>
+                      Graduation Year *
+                    </label>
+                    <input 
+                      type="text" 
+                      name="student_graduation_year_or_years_attended" 
+                      className="form-input" 
+                      placeholder="e.g. 2024" 
+                      value={formData.student_graduation_year_or_years_attended} 
+                      onChange={handleInputChange} 
+                      required
+                      style={{ background: '#ffffff', color: '#333', border: '1px solid #ccc' }}
+                    />
+                  </div>
+                ) : (
+                  <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#444' }}>
+                      Grade Level *
+                    </label>
+                    <select
+                      name="student_graduation_year_or_years_attended" 
+                      className="form-select" 
+                      value={formData.student_graduation_year_or_years_attended} 
+                      onChange={handleInputChange} 
+                      required
+                      style={{ background: '#ffffff', color: '#333', border: '1px solid #ccc', padding: '1rem 1.25rem' }}
+                    >
+                      <option value="Freshman">Freshman</option>
+                      <option value="Sophomore">Sophomore</option>
+                      <option value="Junior">Junior</option>
+                      <option value="Senior">Senior</option>
+                    </select>
+                  </div>
+                )}
               </div>
             )}
 
