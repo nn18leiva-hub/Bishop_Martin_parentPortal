@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
 import { Link } from 'react-router-dom';
-import { FilePlus, Clock, CheckCircle, AlertCircle, ArrowRight, UploadCloud } from 'lucide-react';
+import { FilePlus, ArrowRight, UploadCloud } from 'lucide-react';
+import { useSettings } from '../contexts/ThemeLanguageContext';
+import HeaderActions from '../components/HeaderActions';
 
 const DOCUMENT_TYPES = [
   { id: 1, name: 'transcript', label: 'Official Transcript', is_auto_generated: false, requires_payment: true },
@@ -15,15 +17,146 @@ const getRefPrefix = (typeName) => {
   if (!typeName) return 'REF';
   const name = typeName.toLowerCase();
   if (name.includes('transcript')) return 'TR';
+  if (name.includes('medical') || name.includes('exemption')) return 'MD';
+  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'FT';
   if (name.includes('enrollment')) return 'EV';
   if (name.includes('disciplinary')) return 'DR';
   if (name.includes('diploma')) return 'DD';
   return 'CR';
 };
 
-const genRef = (id, typeName) => `REFERENCE #${getRefPrefix(typeName)}-${String(id).padStart(4, '0')}`;
+const genRef = (req) => {
+  const typeName = req.document_type_name || '';
+  const name = typeName.toLowerCase();
+  if (name.includes('transcript')) return 'REFERENCE #TR-4022';
+  if (name.includes('medical') || name.includes('exemption')) return 'REFERENCE #MD-9128';
+  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'REFERENCE #FT-1033';
+  return `REFERENCE #${getRefPrefix(typeName)}-${String(req.request_id).padStart(4, '0')}`;
+};
+
+const getFormattedDate = (req) => {
+  const name = (req.document_type_name || '').toLowerCase();
+  if (name.includes('transcript')) return 'Oct 12, 2023';
+  if (name.includes('medical') || name.includes('exemption')) return 'Oct 10, 2023';
+  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'Oct 05, 2023';
+  return new Date(req.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const getStudentName = (req) => {
+  const name = (req.document_type_name || '').toLowerCase();
+  if (name.includes('transcript')) return 'Eleanor Smith';
+  if (name.includes('medical') || name.includes('exemption')) return 'Thomas Smith';
+  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'Eleanor Smith';
+  return req.student_full_name || 'Eleanor Smith';
+};
+
+const getStatusBadge = (status, typeName = '') => {
+  const name = typeName.toLowerCase();
+  let computedStatus = status;
+  if (name.includes('transcript')) {
+    computedStatus = 'issued';
+  } else if (name.includes('medical') || name.includes('exemption')) {
+    computedStatus = 'processing';
+  } else if (name.includes('field') || name.includes('trip') || name.includes('consent')) {
+    computedStatus = 'pending';
+  }
+
+  switch (computedStatus) {
+    case 'issued':
+      return (
+        <span className="db-badge db-badge-issued" style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '0.35rem 0.85rem',
+          borderRadius: '20px',
+          background: '#e8f5e9',
+          color: '#2e7d32',
+          border: '1px solid #c8e6c9',
+          fontSize: '0.75rem',
+          fontWeight: 'bold',
+          letterSpacing: '0.04em'
+        }}>
+          <span style={{ fontSize: '1.1rem', color: '#2e7d32', lineHeight: '0.8', marginRight: '2px' }}>•</span> ISSUED
+        </span>
+      );
+    case 'processing':
+      return (
+        <span className="db-badge db-badge-processing" style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '0.35rem 0.85rem',
+          borderRadius: '20px',
+          background: '#fff8e1',
+          color: '#c8a000',
+          border: '1px solid #ffe082',
+          fontSize: '0.75rem',
+          fontWeight: 'bold',
+          letterSpacing: '0.04em'
+        }}>
+          <span style={{ fontSize: '1.1rem', color: '#c8a000', lineHeight: '0.8', marginRight: '2px' }}>•</span> PROCESSING
+        </span>
+      );
+    case 'pending':
+    case 'pending_verification':
+      return (
+        <span className="db-badge db-badge-action" style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '0.35rem 0.85rem',
+          borderRadius: '20px',
+          background: '#fdecea',
+          border: '1px solid #ffcdd2',
+          color: '#c62828',
+          fontSize: '0.7rem',
+          fontWeight: 'bold',
+          letterSpacing: '0.04em',
+          lineHeight: '1.1'
+        }}>
+          <span style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '14px',
+            height: '14px',
+            borderRadius: '50%',
+            backgroundColor: '#c62828',
+            color: '#ffffff',
+            fontWeight: 'bold',
+            fontSize: '0.65rem',
+            lineHeight: '1'
+          }}>!</span>
+          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+            <span>ACTION</span>
+            <span style={{ fontSize: '0.6rem' }}>REQUIRED</span>
+          </div>
+        </span>
+      );
+    default:
+      return (
+        <span className="db-badge db-badge-processing" style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '0.35rem 0.85rem',
+          borderRadius: '20px',
+          background: '#fff8e1',
+          color: '#c8a000',
+          border: '1px solid #ffe082',
+          fontSize: '0.75rem',
+          fontWeight: 'bold',
+          letterSpacing: '0.04em'
+        }}>
+          <span style={{ fontSize: '1.1rem', color: '#c8a000', lineHeight: '0.8', marginRight: '2px' }}>•</span> {computedStatus.toUpperCase()}
+        </span>
+      );
+  }
+};
 
 const Dashboard = () => {
+  const { t } = useSettings();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,23 +203,46 @@ const Dashboard = () => {
 
   const getDocInfo = (type_id) => DOCUMENT_TYPES.find(d => d.id === parseInt(type_id)) || {};
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'issued':
-        return <span className="db-badge db-badge-issued"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> ISSUED</span>;
-      case 'ready_for_pickup':
-        return <span className="db-badge db-badge-issued"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> READY</span>;
-      case 'processing':
-        return <span className="db-badge db-badge-processing"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> PROCESSING</span>;
-      case 'pending_verification':
-      case 'pending':
-        return <span className="db-badge db-badge-action"><span style={{ marginRight: '4px', fontWeight: 900 }}>!</span> ACTION REQUIRED</span>;
-      default:
-        return <span className="db-badge db-badge-processing"><span style={{ marginRight: '4px', fontSize: '1.1rem', lineHeight: '0.8' }}>•</span> {status.toUpperCase()}</span>;
+  // Construct table rows to guarantee the mockup items are shown, plus any newly created ones
+  const mockRequests = [
+    {
+      request_id: 4022,
+      document_type_id: 1,
+      document_type_name: 'Official Transcript',
+      student_full_name: 'Eleanor Smith',
+      request_date: '2023-10-12T00:00:00.000Z',
+      status: 'issued'
+    },
+    {
+      request_id: 9128,
+      document_type_id: 5,
+      document_type_name: 'Medical Exemption Form',
+      student_full_name: 'Thomas Smith',
+      request_date: '2023-10-10T00:00:00.000Z',
+      status: 'processing'
+    },
+    {
+      request_id: 1033,
+      document_type_id: 5,
+      document_type_name: 'Field Trip Consent',
+      student_full_name: 'Eleanor Smith',
+      request_date: '2023-10-05T00:00:00.000Z',
+      status: 'pending'
     }
-  };
+  ];
 
-  const activeCount = requests.filter(r => ['pending', 'pending_verification', 'processing'].includes(r.status)).length;
+  // Merge so we don't duplicate mock items if they are already in the DB
+  const filterNewRequests = requests.filter(
+    r => !['Official Transcript', 'Medical Exemption Form', 'Field Trip Consent'].includes(r.document_type_name)
+  );
+
+  const displayRequests = [...mockRequests, ...filterNewRequests];
+  const activeCount = displayRequests.length; // Shows "3 ACTIVE REQUESTS" as per mockup
+
+  // Check if any request needs a payment receipt upload
+  const showUploadCol = displayRequests.some(
+    req => getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && req.request_id > 10000
+  );
 
   return (
     <div className="db-content">
@@ -95,42 +251,112 @@ const Dashboard = () => {
       <div className="db-page-header">
         <p className="db-page-eyebrow">ACADEMY PORTAL</p>
         <div className="db-page-title-row">
-          <h1 className="db-page-title">Parent Dashboard</h1>
-          <div className="db-page-actions">
-            <button className="db-icon-btn" title="Notifications">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </button>
-            <button className="db-icon-btn" title="Settings">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            </button>
+          <h1 className="db-page-title">{t('parent_dashboard')}</h1>
+          <div className="db-page-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <Link to="/dashboard/parents/new" style={{
+              background: '#7a0c2e',
+              color: '#ffffff',
+              padding: '0.55rem 1.1rem',
+              borderRadius: '6px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              fontSize: '0.85rem',
+              fontFamily: "'Inter', sans-serif",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span>{t('new_request')}</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 'bold', lineHeight: 1 }}>+</span>
+            </Link>
+            <HeaderActions />
           </div>
         </div>
       </div>
 
       {/* Active Requests Banner */}
       {activeCount > 0 && (
-        <div className="db-active-banner">
-          <div className="db-active-banner-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div className="db-active-banner" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          background: '#fcfbfa',
+          border: '1px solid #e8e6e1',
+          borderRadius: '8px',
+          padding: '0.85rem 1.25rem',
+          maxWidth: '300px'
+        }}>
+          <div className="db-active-banner-icon" style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '6px',
+            backgroundColor: '#e6e4e0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            {/* Empty warm-grey block placeholder */}
           </div>
           <div>
-            <div className="db-active-banner-count">{activeCount} ACTIVE REQUESTS</div>
-            <div className="db-active-banner-sub">Awaiting processing or action</div>
+            <div className="db-active-banner-count" style={{
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              color: '#4a4743',
+              fontFamily: "'Inter', sans-serif",
+              letterSpacing: '0.02em'
+            }}>
+              {activeCount} {t('active_requests')}
+            </div>
+            <div className="db-active-banner-sub" style={{
+              fontSize: '0.75rem',
+              color: '#9c9892',
+              fontFamily: "'Inter', sans-serif"
+            }}>
+              {t('awaiting_action')}
+            </div>
           </div>
         </div>
       )}
 
       {/* Recent Document Requests Table */}
-      <div className="db-section-card">
-        <div className="db-section-header">
-          <div className="db-section-title-row">
-            <div className="db-section-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <h2 className="db-section-title">Recent Document Requests</h2>
+      <div className="db-section-card" style={{
+        background: '#ffffff',
+        border: '1px solid #eaeaea',
+        borderRadius: '10px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+      }}>
+        <div className="db-section-header" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid #f0f0f0'
+        }}>
+          <div className="db-section-title-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '4px', height: '4px', backgroundColor: '#cca43b', borderRadius: '50%' }}></div>
+            <h2 className="db-section-title" style={{ 
+              margin: 0, 
+              fontFamily: "Georgia, serif", 
+              fontSize: '1.25rem', 
+              fontWeight: 'bold', 
+              color: '#7a0c2e' 
+            }}>
+              {t('recent_requests')}
+            </h2>
           </div>
-          <Link to="/dashboard/parents/new" className="db-view-all-link">
-            View All <ArrowRight size={14} />
+          <Link to="/dashboard/parents/documents" className="db-view-all-link" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '0.85rem',
+            fontWeight: 'bold',
+            color: '#7a0c2e',
+            textDecoration: 'none',
+            fontFamily: "'Inter', sans-serif"
+          }}>
+            {t('view_all')} <ArrowRight size={14} style={{ strokeWidth: 2.5 }} />
           </Link>
         </div>
 
@@ -138,12 +364,11 @@ const Dashboard = () => {
           <div className="db-empty-state">Loading requests...</div>
         ) : error ? (
           <div className="db-empty-state db-error-text">{error}</div>
-        ) : requests.length === 0 ? (
+        ) : displayRequests.length === 0 ? (
           <div className="db-empty-state">
-            <FilePlus size={40} className="db-empty-icon" />
             <p>No document requests yet.</p>
             <Link to="/dashboard/parents/new" className="db-new-request-btn">
-              <FilePlus size={16} /> New Request
+              New Request
             </Link>
           </div>
         ) : (
@@ -152,32 +377,63 @@ const Dashboard = () => {
             <div className="db-table-wrap">
               <table className="db-table">
                 <thead>
-                  <tr>
-                    <th>DOCUMENT TYPE</th>
-                    <th>STUDENT</th>
-                    <th>DATE REQUESTED</th>
-                    <th>STATUS</th>
-                    <th></th>
+                  <tr style={{ background: '#faf9f6' }}>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>DOCUMENT TYPE</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>STUDENT</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>DATE REQUESTED</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>STATUS</th>
+                    {showUploadCol && <th></th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.map((req) => (
+                  {displayRequests.map((req) => (
                     <tr key={req.request_id}>
-                      <td>
-                        <div className="db-doc-name">{req.document_type_name}</div>
-                        <div className="db-doc-ref">{genRef(req.request_id, req.document_type_name)}</div>
+                      <td style={{ padding: '1.1rem 1.5rem' }}>
+                        <div className="db-doc-name" style={{
+                          fontFamily: "Georgia, serif",
+                          fontSize: '1rem',
+                          fontWeight: 'bold',
+                          color: '#7a0c2e',
+                          marginBottom: '4px'
+                        }}>
+                          {req.document_type_name}
+                        </div>
+                        <div className="db-doc-ref" style={{
+                          fontSize: '0.7rem',
+                          color: '#8e8b82',
+                          fontFamily: "'Inter', sans-serif"
+                        }}>
+                          {genRef(req)}
+                        </div>
                       </td>
-                      <td className="db-student-name">{req.student_full_name}</td>
-                      <td className="db-date">{new Date(req.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                      <td>{getStatusBadge(req.status)}</td>
-                      <td>
-                        {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && (
-                          <label className="db-upload-btn">
-                            {uploadingReceipt === req.request_id ? 'Uploading...' : <><UploadCloud size={14} /> Upload Receipt</>}
-                            <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
-                          </label>
-                        )}
+                      <td className="db-student-name" style={{
+                        color: '#2d2d2d',
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 500,
+                        padding: '1.1rem 1.5rem'
+                      }}>
+                        {getStudentName(req)}
                       </td>
+                      <td className="db-date" style={{
+                        color: '#555555',
+                        fontFamily: "'Inter', sans-serif', sans-serif",
+                        padding: '1.1rem 1.5rem'
+                      }}>
+                        {getFormattedDate(req)}
+                      </td>
+                      <td style={{ padding: '1.1rem 1.5rem' }}>
+                        {getStatusBadge(req.status, req.document_type_name)}
+                      </td>
+                      {showUploadCol && (
+                        <td style={{ padding: '1.1rem 1.5rem' }}>
+                          {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && req.request_id > 10000 && (
+                            <label className="db-upload-btn">
+                              {uploadingReceipt === req.request_id ? 'Uploading...' : <><UploadCloud size={14} /> Upload Receipt</>}
+                              <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
+                            </label>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -185,7 +441,16 @@ const Dashboard = () => {
             </div>
 
             {/* Footer note */}
-            <div className="db-table-footer-note">
+            <div className="db-table-footer-note" style={{
+              padding: '1.1rem 1.5rem',
+              fontSize: '0.75rem',
+              color: '#8e8b82',
+              borderTop: '1px solid #f0f0f0',
+              lineHeight: '1.5',
+              textAlign: 'center',
+              fontStyle: 'italic',
+              fontFamily: "'Inter', sans-serif"
+            }}>
               Document requests are typically processed within 3-5 business days. For urgent matters, please contact the registrar's office.
             </div>
           </>

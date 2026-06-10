@@ -1048,7 +1048,7 @@ select:-webkit-autofill:focus {
 .db-app-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f4f4f6;
+  background-color: #faf9f6;
 }
 
 /* ---- Sidebar ---- */
@@ -1160,6 +1160,8 @@ select:-webkit-autofill:focus {
 .db-sidebar-link.active {
   background-color: #7a0c2e;
   color: #ffffff;
+  border-right: 4px solid #cca43b;
+  border-radius: 6px 0 0 6px;
 }
 
 .db-sidebar-footer {
@@ -1220,7 +1222,7 @@ select:-webkit-autofill:focus {
   flex: 1;
   margin-left: 220px;
   min-height: 100vh;
-  background-color: #f4f4f6;
+  background-color: #faf9f6;
   display: flex;
   flex-direction: column;
 }
@@ -1260,7 +1262,7 @@ select:-webkit-autofill:focus {
   min-height: 100vh;
   gap: 1rem;
   color: #888888;
-  background: #f4f4f6;
+  background: #faf9f6;
 }
 
 .db-loading-spinner {
@@ -2029,4 +2031,148 @@ select:-webkit-autofill:focus {
   color: #7a0c2e;
   border-color: #7a0c2e;
 }
+
+/* ==========================================================================
+   Dark Mode Custom Theme Overrides
+   ========================================================================== */
+
+body.dark {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark .db-app-container {
+  background-color: #121212;
+}
+
+body.dark .db-main {
+  background-color: #121212 !important;
+}
+
+body.dark .db-sidebar {
+  background-color: #1a1a1a !important;
+  border-right: 1px solid #2d2d2d !important;
+}
+
+body.dark .db-sidebar-brand {
+  color: #ffb4c4 !important;
+}
+
+body.dark .db-sidebar-link {
+  color: #aaaaaa !important;
+}
+
+body.dark .db-sidebar-link:hover {
+  background-color: #2d2d2d !important;
+  color: #ffffff !important;
+}
+
+body.dark .db-sidebar-link.active {
+  background-color: #7a0c2e !important;
+  color: #ffffff !important;
+  border-right: 4px solid #cca43b !important;
+}
+
+body.dark .mock-card, 
+body.dark .db-section-card,
+body.dark .db-active-banner,
+body.dark .modal-panel {
+  background-color: #1a1a1a !important;
+  border: 1px solid #2d2d2d !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.dark table {
+  background-color: #1e1e1e !important;
+}
+
+body.dark th {
+  background-color: #242424 !important;
+  color: #888888 !important;
+  border-bottom: 1px solid #2d2d2d !important;
+}
+
+body.dark tr {
+  border-bottom: 1px solid #2d2d2d !important;
+  background-color: #1e1e1e !important;
+}
+
+body.dark tr:hover {
+  background-color: #282828 !important;
+}
+
+body.dark td {
+  color: #dddddd !important;
+}
+
+body.dark h1, 
+body.dark h2, 
+body.dark h3, 
+body.dark h4, 
+body.dark .serif-title, 
+body.dark .db-page-title, 
+body.dark .db-section-title,
+body.dark .serif-number {
+  color: #ffffff !important;
+}
+
+body.dark p, 
+body.dark span, 
+body.dark label,
+body.dark .db-active-banner-sub {
+  color: #bbbbbb !important;
+}
+
+body.dark input, 
+body.dark select, 
+body.dark textarea {
+  background-color: #2a2a2a !important;
+  border: 1px solid #3d3d3d !important;
+  color: #ffffff !important;
+}
+
+body.dark .adm-topbar-search,
+body.dark .db-page-actions button {
+  background-color: #2a2a2a !important;
+  border: 1px solid #3d3d3d !important;
+  color: #ffffff !important;
+}
+
+body.dark .db-page-actions button {
+  background-color: #2d2d2d !important;
+}
+
+body.dark .db-active-banner-count {
+  color: #cca43b !important;
+}
+
+body.dark .db-verify-banner {
+  background-color: #241d10 !important;
+  border: 1px solid #423214 !important;
+  color: #f59e0b !important;
+}
+
+body.dark .db-verify-banner strong {
+  color: #fcd34d !important;
+}
+
+body.dark .form-select {
+  background-color: #2a2a2a !important;
+  border-color: #3d3d3d !important;
+  color: #ffffff !important;
+}
+
+body.dark .glass-panel {
+  background: #1a1a1a !important;
+  border-color: #2d2d2d !important;
+}
+
+body.dark .db-sidebar-footer {
+  border-top: 1px solid #2d2d2d !important;
+}
+
+body.dark .db-sidebar-footer span {
+  color: #ffffff !important;
+}
+
 

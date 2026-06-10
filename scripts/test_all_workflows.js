@@ -25,9 +25,17 @@ async function checkAllWorkflows() {
         try { return JSON.parse(dataStr); } catch(e) { return {}; }
     };
 
-    const baseURL = 'http://localhost:3000';
+    const baseURL = 'http://localhost:3000/api';
 
     try {
+        // Create test staff users in the database
+        const db = require('../src/config/db');
+        const bcrypt = require('bcrypt');
+        const vHash = await bcrypt.hash('password123', 10);
+        await db.query("INSERT INTO staff (full_name, email, password_hash, role) VALUES ('Admin User', 'admin@bmhs.edu.bz', $1, 'staff') ON CONFLICT DO NOTHING", [vHash]);
+        await db.query("INSERT INTO staff (full_name, email, password_hash, role) VALUES ('Super Admin', 'superadmin@bmhs.edu.bz', $1, 'super_admin') ON CONFLICT DO NOTHING", [vHash]);
+        await db.query("INSERT INTO staff (full_name, email, password_hash, role) VALUES ('Viewer', 'viewer@tester.bz', $1, 'viewer') ON CONFLICT DO NOTHING", [vHash]);
+
         // --- SETUP DUMMY IMAGE ---
         const imageBlob = new Blob(['dummy image content'], { type: 'image/png' });
 
@@ -115,12 +123,6 @@ async function checkAllWorkflows() {
 
         console.log("\n--- PHASE 4: SUPER ADMIN & VIEWER CONSTRAINTS ---");
         
-        // Create Viewer via script if not exists (seed doesn't always apply)
-        const db = require('./src/config/db');
-        const bcrypt = require('bcrypt');
-        const vHash = await bcrypt.hash('password123', 10);
-        await db.query("INSERT INTO staff (full_name, email, password_hash, role) VALUES ('Viewer', 'viewer@tester.bz', $1, 'viewer') ON CONFLICT DO NOTHING", [vHash]);
-
         // 9. Viewer Login
         res = await fetch(`${baseURL}/auth/login`, {
             method: 'POST',

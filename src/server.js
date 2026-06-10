@@ -1,9 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const fs = require('fs');
 
 // Load environment variables
 dotenv.config();
+
+// Ensure upload directories exist
+const uploadDirs = [
+  'uploads',
+  'uploads/signatures',
+  'uploads/ssn_cards',
+  'uploads/payment_receipts',
+  'uploads/generated_documents'
+];
+uploadDirs.forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 const app = express();
 

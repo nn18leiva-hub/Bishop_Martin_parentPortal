@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { apiFetch } from '../services/api';
-import { LogOut, UserPlus, Trash2, ShieldAlert, Search, XCircle, CheckCircle, Filter, Bell, Settings, UserMinus, Plus, MoreVertical } from 'lucide-react';
+import { LogOut, UserPlus, Trash2, ShieldAlert, Search, XCircle, CheckCircle, Filter, UserMinus, Plus, MoreVertical } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useSettings } from '../contexts/ThemeLanguageContext';
+import HeaderActions from '../components/HeaderActions';
 
 const SuperAdminDashboard = () => {
   const { logout, user, loading: authLoading } = useAuth();
+  const { t } = useSettings();
   const navigate = useNavigate();
   
   const [staffList, setStaffList] = useState([]);
@@ -18,6 +21,15 @@ const SuperAdminDashboard = () => {
   const [error, setError] = useState('');
   
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Collapsible Filters states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterDept, setFilterDept] = useState('all');
+  const [filterRole, setFilterRole] = useState('all');
 
   const isAuthorized = user?.type === 'staff';
 
@@ -148,15 +160,35 @@ const SuperAdminDashboard = () => {
     }
   });
 
-  // Filter based on search query
+  // Filter based on search query, department, and role
   const filteredStaff = displayedStaff.filter(s => {
-    if (!searchQuery) return true;
-    const lower = searchQuery.toLowerCase();
-    return s.full_name.toLowerCase().includes(lower) || 
-           s.email.toLowerCase().includes(lower) || 
-           s.department.toLowerCase().includes(lower) || 
-           s.role_label.toLowerCase().includes(lower);
+    if (searchQuery) {
+      const lower = searchQuery.toLowerCase();
+      const matchSearch = s.full_name.toLowerCase().includes(lower) || 
+                          s.email.toLowerCase().includes(lower) || 
+                          s.department.toLowerCase().includes(lower) || 
+                          s.role_label.toLowerCase().includes(lower);
+      if (!matchSearch) return false;
+    }
+    
+    if (filterDept !== 'all') {
+      if (s.department !== filterDept) return false;
+    }
+    
+    if (filterRole !== 'all') {
+      if (s.role_label !== filterRole) return false;
+    }
+    
+    return true;
   });
+
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage) || 1;
+  const activePage = Math.min(currentPage, totalPages);
+  
+  const paginatedStaff = useMemo(() => {
+    const startIndex = (activePage - 1) * itemsPerPage;
+    return filteredStaff.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredStaff, activePage]);
 
   return (
     <div style={{ padding: '1rem 1.5rem 2rem 1.5rem' }}>
@@ -164,26 +196,20 @@ const SuperAdminDashboard = () => {
       {/* ── Page Navigation Header Bar ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#7a0c2e', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
-          Staff Registry
+          {t('staff_registry')}
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
           <div style={{ background: '#f5f5f5', border: '1px solid #eaeaea', borderRadius: '20px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Search size={15} color="#888" />
             <input 
               type="text" 
-              placeholder="Search registry..." 
+              placeholder={t('search_registry')} 
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '180px', fontFamily: "'Outfit', sans-serif" }} 
             />
           </div>
-          <button style={{ border: 'none', background: 'none', color: '#666', cursor: 'pointer', position: 'relative' }}>
-            <Bell size={20} />
-            <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#7a0c2e' }}></span>
-          </button>
-          <button style={{ border: 'none', background: 'none', color: '#666', cursor: 'pointer' }}>
-            <Settings size={20} />
-          </button>
+          <HeaderActions />
           <img 
             src="/principal_avatar.png" 
             alt="Principal Profile" 
@@ -199,24 +225,27 @@ const SuperAdminDashboard = () => {
             Administrative Control
           </p>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#2c2c2c', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
-            Staff Registry
+            {t('staff_registry')}
           </h2>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 6, 
-            background: '#ffffff', 
-            border: '1px solid #eaeaea', 
-            borderRadius: '6px', 
-            padding: '0.55rem 1.1rem', 
-            fontSize: '0.85rem', 
-            fontWeight: 600, 
-            color: '#444',
-            cursor: 'pointer'
-          }}>
-            <Filter size={14} /> Filter List
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 6, 
+              background: showFilters ? 'rgba(122, 12, 46, 0.08)' : '#ffffff', 
+              border: showFilters ? '1.5px solid #7a0c2e' : '1px solid #eaeaea', 
+              borderRadius: '6px', 
+              padding: '0.55rem 1.1rem', 
+              fontSize: '0.85rem', 
+              fontWeight: 600, 
+              color: showFilters ? '#7a0c2e' : '#444',
+              cursor: 'pointer'
+            }}
+          >
+            <Filter size={14} /> {t('filter_list')}
           </button>
           <button 
             onClick={() => setIsAddModalOpen(true)}
@@ -234,10 +263,55 @@ const SuperAdminDashboard = () => {
               cursor: 'pointer'
             }}
           >
-            <Plus size={16} /> Add New Staff
+            <Plus size={16} /> {t('add_new_staff')}
           </button>
         </div>
       </div>
+
+      {/* ── Collapsible Filters Panel ── */}
+      {showFilters && (
+        <div className="mock-card" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', background: 'var(--card-bg, #ffffff)', border: '1px solid var(--border-color, #eaeaea)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: '180px' }}>
+            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color, #555)' }}>Department</label>
+            <select
+              value={filterDept}
+              onChange={e => { setFilterDept(e.target.value); setCurrentPage(1); }}
+              style={{ border: '1px solid var(--border-color, #eaeaea)', borderRadius: 6, padding: '0.45rem', fontSize: '0.85rem', background: 'transparent', color: 'var(--text-color, #2c2c2c)', outline: 'none' }}
+            >
+              <option value="all">All Departments</option>
+              <option value="Science & Tech">Science & Tech</option>
+              <option value="Humanities">Humanities</option>
+              <option value="Finance">Finance</option>
+              <option value="Administration">Administration</option>
+            </select>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: '180px' }}>
+            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color, #555)' }}>Role</label>
+            <select
+              value={filterRole}
+              onChange={e => { setFilterRole(e.target.value); setCurrentPage(1); }}
+              style={{ border: '1px solid var(--border-color, #eaeaea)', borderRadius: 6, padding: '0.45rem', fontSize: '0.85rem', background: 'transparent', color: 'var(--text-color, #2c2c2c)', outline: 'none' }}
+            >
+              <option value="all">All Roles</option>
+              <option value="Department Head">Department Head</option>
+              <option value="Senior Lecturer">Senior Lecturer</option>
+              <option value="Bursar">Bursar</option>
+              <option value="Staff Member">Staff Member</option>
+              <option value="Principal">Principal</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button 
+              onClick={() => { setFilterDept('all'); setFilterRole('all'); setSearchQuery(''); setCurrentPage(1); }}
+              style={{ border: '1px solid #7a0c2e', color: '#7a0c2e', background: 'transparent', borderRadius: 6, padding: '0.45rem 1rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Registry Table Card ── */}
       <div className="mock-card" style={{ padding: '0.5rem 0' }}>
@@ -254,7 +328,7 @@ const SuperAdminDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredStaff.map((s, i) => (
+              {paginatedStaff.map((s, i) => (
                 <tr key={s.staff_id || i} style={{ borderBottom: '1px solid #f9f9f9' }}>
                   
                   {/* Staff Member (Initials, Name, Email) */}
@@ -344,25 +418,43 @@ const SuperAdminDashboard = () => {
         {/* Table Footer Pagination */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderTop: '1px solid #eaeaea' }}>
           <span style={{ fontSize: '0.8rem', color: '#888888' }}>
-            Showing {filteredStaff.length} of {staffList.length > 0 ? (3 + staffList.length - 2) : 124} active staff members
+            Showing {paginatedStaff.length} of {filteredStaff.length} active staff members
           </span>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button style={{ border: 'none', background: 'none', color: '#888888', cursor: 'pointer', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>
+            <button 
+              disabled={activePage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              style={{ border: 'none', background: 'none', color: activePage === 1 ? '#ccc' : '#888888', cursor: activePage === 1 ? 'not-allowed' : 'pointer', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+            >
               &lt;
             </button>
-            <span style={{ 
-              background: '#7a0c2e', 
-              color: '#ffffff', 
-              padding: '2px 8px', 
-              borderRadius: '4px', 
-              fontSize: '0.8rem', 
-              fontWeight: 700 
-            }}>
-              1
-            </span>
-            <span style={{ color: '#888888', fontSize: '0.8rem', cursor: 'pointer', padding: '2px 8px' }}>2</span>
-            <span style={{ color: '#888888', fontSize: '0.8rem', cursor: 'pointer', padding: '2px 8px' }}>3</span>
-            <button style={{ border: 'none', background: 'none', color: '#888888', cursor: 'pointer', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>
+            {Array.from({ length: totalPages }, (_, idx) => {
+              const pageNum = idx + 1;
+              const isActive = activePage === pageNum;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  style={{
+                    border: 'none',
+                    background: isActive ? '#7a0c2e' : 'none',
+                    color: isActive ? '#ffffff' : '#888888',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontSize: '0.8rem',
+                    fontWeight: isActive ? 700 : 400,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button 
+              disabled={activePage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              style={{ border: 'none', background: 'none', color: activePage === totalPages ? '#ccc' : '#888888', cursor: activePage === totalPages ? 'not-allowed' : 'pointer', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+            >
               &gt;
             </button>
           </div>

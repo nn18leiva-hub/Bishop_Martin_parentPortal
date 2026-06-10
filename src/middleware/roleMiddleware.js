@@ -7,6 +7,11 @@ const requireRole = (requiredRole) => {
         const type = req.user.type; // 'parent' or 'staff'
         const role = req.user.role; // 'viewer', 'admin', 'super_admin' or undefined
         
+        // Block viewers from modifying resources (only GET allowed)
+        if (role === 'viewer' && req.method !== 'GET') {
+            return res.status(403).json({ message: 'Access denied. Viewers are restricted to read-only actions.' });
+        }
+
         // 1. Parent endpoints only for parents and past students
         if (requiredRole === 'parent') {
             if (type !== 'parent' && type !== 'past_student') return res.status(403).json({ message: 'Access denied. Parents and Past Students only.' });

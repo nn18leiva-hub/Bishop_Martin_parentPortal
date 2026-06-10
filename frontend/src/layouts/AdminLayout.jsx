@@ -1,13 +1,16 @@
 import React from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, Search, Settings } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import MobileNav from '../components/MobileNav';
+import { useSettings } from '../contexts/ThemeLanguageContext';
+import HeaderActions from '../components/HeaderActions';
 
 const AdminLayout = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useSettings();
 
   React.useEffect(() => {
      if (!loading) {
@@ -34,6 +37,12 @@ const AdminLayout = () => {
     '/staff/settings',
     '/superadmin/requests',
     '/staff/requests',
+    '/superadmin/approval',
+    '/staff/approval',
+    '/superadmin/archive',
+    '/staff/archive',
+    '/superadmin/staff-directory',
+    '/staff/staff-directory',
     '/staff'
   ].includes(normalizedPath);
 
@@ -53,15 +62,9 @@ const AdminLayout = () => {
             <div className="adm-topbar-actions" style={{ marginLeft: 'auto', gap: '1rem' }}>
               <div className="adm-topbar-search" style={{ background: '#f5f5f5', border: '1px solid #eaeaea', borderRadius: '20px', padding: '0.4rem 1rem' }}>
                 <Search size={15} color="#888" />
-                <input type="text" placeholder="Search records..." style={{ fontFamily: "'Outfit', sans-serif" }} />
+                <input type="text" placeholder={t('search_records')} style={{ fontFamily: "'Outfit', sans-serif" }} />
               </div>
-              <button className="adm-topbar-icon-btn" aria-label="Notifications" style={{ border: 'none', background: 'none', color: '#666', position: 'relative', width: 'auto', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Bell size={20} />
-                <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#7a0c2e' }}></span>
-              </button>
-              <button className="adm-topbar-icon-btn" aria-label="Settings" style={{ border: 'none', background: 'none', color: '#666', width: 'auto', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Settings size={20} />
-              </button>
+              <HeaderActions />
             </div>
           </header>
         )}

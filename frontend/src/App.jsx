@@ -16,13 +16,16 @@ import OversightDashboard from './pages/OversightDashboard';
 import UserDirectory from './pages/UserDirectory';
 import SharedLayout from './layouts/SharedLayout';
 import Profile from './pages/Profile';
+import Verification from './pages/Verification';
 import ComingSoon from './pages/ComingSoon';
+import { ThemeLanguageProvider } from './contexts/ThemeLanguageContext';
 import './index.css';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <ThemeLanguageProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
@@ -35,13 +38,22 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="new" element={<NewRequest />} />
             <Route path="bank-details" element={<BankDetails />} />
+            <Route path="documents" element={<ComingSoon />} />
+            <Route path="approval" element={<ComingSoon />} />
+            <Route path="staff-directory" element={<ComingSoon />} />
+            <Route path="archive" element={<ComingSoon />} />
             <Route path="records" element={<ComingSoon />} />
+            <Route path="verification" element={<Verification />} />
+            <Route path="users" element={<Profile />} />
           </Route>
           
           {/* Administrative Routes - Staff */}
           <Route path="/staff" element={<AdminLayout />}>
             <Route index element={<StaffDashboard />} />
             <Route path="requests" element={<StaffDashboard />} />
+            <Route path="approval" element={<StaffDashboard />} />
+            <Route path="archive" element={<StaffDashboard />} />
+            <Route path="staff-directory" element={<SuperAdminDashboard />} />
             <Route path="verification" element={<ComingSoon />} />
             <Route path="users" element={<UserDirectory />} />
             <Route path="settings" element={<SuperAdminDashboard />} />
@@ -51,6 +63,9 @@ function App() {
           <Route path="/superadmin" element={<AdminLayout />}>
             <Route index element={<OversightDashboard />} />
             <Route path="requests" element={<StaffDashboard />} />
+            <Route path="approval" element={<StaffDashboard />} />
+            <Route path="archive" element={<StaffDashboard />} />
+            <Route path="staff-directory" element={<SuperAdminDashboard />} />
             <Route path="verification" element={<ComingSoon />} />
             <Route path="users" element={<UserDirectory />} />
             <Route path="settings" element={<SuperAdminDashboard />} />
@@ -63,6 +78,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      </ThemeLanguageProvider>
     </AuthProvider>
   );
 }

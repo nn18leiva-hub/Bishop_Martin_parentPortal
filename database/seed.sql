@@ -20,3 +20,13 @@ TRUNCATE TABLE staff RESTART IDENTITY CASCADE;
 INSERT INTO staff (full_name, email, password_hash, role) VALUES
 ('Default Staff Office', 'office@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'staff'),
 ('System Principal', 'principal@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'principal');
+
+-- Default parent account (password is 'password123')
+INSERT INTO parents (full_name, email, phone, password_hash, verified, user_type) VALUES
+('John Doe', 'john@example.com', '600-1234', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', TRUE, 'parent');
+
+-- Mock document requests for John Doe
+INSERT INTO document_requests (parent_id, student_bemis_id, student_full_name, student_graduation_year_or_years_attended, document_type_id, status, request_date, delivery_method) VALUES
+(1, 'STU-9824', 'Eleanor Vance', 'Sophomore', 1, 'issued', '2026-06-05 10:00:00', 'pickup'),
+(1, 'STU-7511', 'Theodore Hayes', 'Freshman', 2, 'processing', '2026-06-08 14:30:00', 'emailed'),
+(1, 'STU-9824', 'Eleanor Vance', 'Sophomore', 3, 'pending', '2026-06-09 09:15:00', 'pickup');

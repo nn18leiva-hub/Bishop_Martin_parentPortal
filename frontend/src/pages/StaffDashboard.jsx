@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
-import { LogOut, Eye, CheckCircle, XCircle, FileText, Activity, Users, FileCheck, Info, AlertTriangle, MoreVertical, Search, Bell, Settings } from 'lucide-react';
+import { LogOut, Eye, CheckCircle, XCircle, FileText, Activity, Users, FileCheck, Info, AlertTriangle, MoreVertical, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useSettings } from '../contexts/ThemeLanguageContext';
+import HeaderActions from '../components/HeaderActions';
 
 const StaffDashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
+  const { t } = useSettings();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -137,6 +140,28 @@ const StaffDashboard = () => {
   // Active requests list
   const activeRequests = requests.length > 0 ? requests : mockRequests;
 
+  // URL path-based filters
+  const isArchivePage = window.location.pathname.includes('/archive');
+  const isApprovalPage = window.location.pathname.includes('/approval');
+
+  let filteredRequests = activeRequests;
+  let pageTitle = 'Parent Requests Dashboard';
+  let pageDescription = 'Manage and verify document submissions from parents and guardians. Use the status column to transition requests through the validation workflow.';
+
+  if (isArchivePage) {
+    filteredRequests = activeRequests.filter(r => r.status === 'completed' || r.status === 'denied');
+    pageTitle = 'Archived Document Requests';
+    pageDescription = 'Historical log of completed or denied parent requests.';
+  } else if (isApprovalPage) {
+    filteredRequests = activeRequests.filter(r => 
+      (!r.parent_verified && r.ssn_card_image_path) || 
+      (r.requires_payment && !r.payment_verified && r.receipt_image_path) ||
+      r.status === 'pending_verification'
+    );
+    pageTitle = 'Approval Queue';
+    pageDescription = 'Verify parent identity SSN cards and uploaded bank payment receipts to approve pending requests.';
+  }
+
   // Stats calculation
   const pendingVerificationCount = requests.length > 0 
     ? requests.filter(r => r.status === 'pending_verification').length 
@@ -162,25 +187,19 @@ const StaffDashboard = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
           <div style={{ background: '#f5f5f5', border: '1px solid #eaeaea', borderRadius: '20px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Search size={15} color="#888" />
-            <input type="text" placeholder="Search parent requests..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '180px', fontFamily: "'Outfit', sans-serif" }} />
+            <input type="text" placeholder={t('search_records')} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '180px', fontFamily: "'Outfit', sans-serif" }} />
           </div>
-          <button style={{ border: 'none', background: 'none', color: '#666', cursor: 'pointer', position: 'relative' }}>
-            <Bell size={20} />
-            <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#7a0c2e' }}></span>
-          </button>
-          <button style={{ border: 'none', background: 'none', color: '#666', cursor: 'pointer' }}>
-            <Settings size={20} />
-          </button>
+          <HeaderActions />
         </div>
       </div>
 
       {/* ── Dashboard Title ── */}
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2c2c2c', margin: '0 0 6px 0', fontFamily: "'Outfit', sans-serif" }}>
-          Parent Requests Dashboard
+          {pageTitle}
         </h2>
         <p style={{ fontSize: '0.85rem', color: '#666666', margin: 0, maxWidth: '750px', lineHeight: 1.5 }}>
-          Manage and verify document submissions from parents and guardians. Use the status column to transition requests through the validation workflow.
+          {pageDescription}
         </p>
       </div>
 
@@ -244,7 +263,7 @@ const StaffDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {activeRequests.map((req, i) => {
+              {filteredRequests.map((req, i) => {
                 const parts = req.student_full_name.split(' ');
                 const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
 
@@ -379,7 +398,7 @@ const StaffDashboard = () => {
         {/* Table Footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderTop: '1px solid #eaeaea' }}>
           <span style={{ fontSize: '0.8rem', color: '#888888' }}>
-            Showing {activeRequests.length} of {requests.length > 0 ? requests.length : 24} requests
+            Showing {filteredRequests.length} of {requests.length > 0 ? requests.length : 24} requests
           </span>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button style={{ 
