@@ -3,6 +3,7 @@ import { apiFetch } from '../services/api';
 import { Link } from 'react-router-dom';
 import { FilePlus, ArrowRight, UploadCloud } from 'lucide-react';
 import { useSettings } from '../contexts/ThemeLanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import HeaderActions from '../components/HeaderActions';
 
 const DOCUMENT_TYPES = [
@@ -26,27 +27,24 @@ const getRefPrefix = (typeName) => {
 };
 
 const genRef = (req) => {
+  if (req.request_id === 4022) return 'REFERENCE #TR-4022';
+  if (req.request_id === 9128) return 'REFERENCE #MD-9128';
+  if (req.request_id === 1033) return 'REFERENCE #FT-1033';
   const typeName = req.document_type_name || '';
-  const name = typeName.toLowerCase();
-  if (name.includes('transcript')) return 'REFERENCE #TR-4022';
-  if (name.includes('medical') || name.includes('exemption')) return 'REFERENCE #MD-9128';
-  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'REFERENCE #FT-1033';
   return `REFERENCE #${getRefPrefix(typeName)}-${String(req.request_id).padStart(4, '0')}`;
 };
 
 const getFormattedDate = (req) => {
-  const name = (req.document_type_name || '').toLowerCase();
-  if (name.includes('transcript')) return 'Oct 12, 2023';
-  if (name.includes('medical') || name.includes('exemption')) return 'Oct 10, 2023';
-  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'Oct 05, 2023';
+  if (req.request_id === 4022) return 'Oct 12, 2023';
+  if (req.request_id === 9128) return 'Oct 10, 2023';
+  if (req.request_id === 1033) return 'Oct 05, 2023';
   return new Date(req.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
 const getStudentName = (req) => {
-  const name = (req.document_type_name || '').toLowerCase();
-  if (name.includes('transcript')) return 'Eleanor Smith';
-  if (name.includes('medical') || name.includes('exemption')) return 'Thomas Smith';
-  if (name.includes('field') || name.includes('trip') || name.includes('consent')) return 'Eleanor Smith';
+  if (req.request_id === 4022) return 'Eleanor Smith';
+  if (req.request_id === 9128) return 'Thomas Smith';
+  if (req.request_id === 1033) return 'Eleanor Smith';
   return req.student_full_name || 'Eleanor Smith';
 };
 
@@ -157,6 +155,7 @@ const getStatusBadge = (status, typeName = '') => {
 
 const Dashboard = () => {
   const { t } = useSettings();
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -238,8 +237,9 @@ const Dashboard = () => {
     r => !['Official Transcript', 'Medical Exemption Form', 'Field Trip Consent'].includes(r.document_type_name)
   );
 
-  const displayRequests = [...mockRequests, ...filterNewRequests];
-  const activeCount = displayRequests.length; // Shows "3 ACTIVE REQUESTS" as per mockup
+  const isDefaultParent = user?.email === 'john@example.com';
+  const displayRequests = isDefaultParent ? [...mockRequests, ...filterNewRequests] : requests;
+  const activeCount = displayRequests.length;
 
   const totalPages = Math.ceil(displayRequests.length / itemsPerPage) || 1;
   // Adjust current page in case the total count shrinks
