@@ -101,26 +101,32 @@ const HeaderActions = () => {
               )}
             </div>
             <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-              {notifications.map(n => (
-                <div 
-                  key={n.id} 
-                  onClick={() => toggleRead(n.id)}
-                  style={{ 
-                    padding: '0.75rem 1rem', 
-                    borderBottom: '1px solid #f9f9f9', 
-                    cursor: 'pointer',
-                    background: n.read ? 'transparent' : 'rgba(122,12,46,0.03)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 4
-                  }}
-                >
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: n.read ? '#666' : '#222', fontWeight: n.read ? 400 : 600, lineHeight: 1.4 }}>
-                    {n.text}
-                  </p>
-                  <span style={{ fontSize: '0.68rem', color: '#aaa' }}>{n.time}</span>
+              {notifications.filter(n => !n.read).length === 0 ? (
+                <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: '#888888', fontSize: '0.8rem' }}>
+                  No new notifications
                 </div>
-              ))}
+              ) : (
+                notifications.filter(n => !n.read).map(n => (
+                  <div 
+                    key={n.id} 
+                    onClick={() => toggleRead(n.id)}
+                    style={{ 
+                      padding: '0.75rem 1rem', 
+                      borderBottom: '1px solid #f9f9f9', 
+                      cursor: 'pointer',
+                      background: 'rgba(122,12,46,0.03)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 4
+                    }}
+                  >
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#222222', fontWeight: 600, lineHeight: 1.4 }}>
+                      {n.text}
+                    </p>
+                    <span style={{ fontSize: '0.68rem', color: '#888888' }}>{n.time}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
