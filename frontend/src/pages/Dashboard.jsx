@@ -162,7 +162,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [uploadingReceipt, setUploadingReceipt] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 3;
+  const [itemsPerPage, setItemsPerPage] = useState(3);
 
   useEffect(() => {
     loadRequests();
@@ -241,11 +241,11 @@ const Dashboard = () => {
   const displayRequests = [...mockRequests, ...filterNewRequests];
   const activeCount = displayRequests.length; // Shows "3 ACTIVE REQUESTS" as per mockup
 
-  const totalPages = Math.ceil(displayRequests.length / ITEMS_PER_PAGE) || 1;
+  const totalPages = Math.ceil(displayRequests.length / itemsPerPage) || 1;
   // Adjust current page in case the total count shrinks
   const safeCurrentPage = Math.min(currentPage, totalPages);
-  const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedRequests = displayRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const paginatedRequests = displayRequests.slice(startIndex, startIndex + itemsPerPage);
 
   // Check if any request needs a payment receipt upload
   const showUploadCol = paginatedRequests.some(
@@ -458,8 +458,34 @@ const Dashboard = () => {
               fontFamily: "'Inter', sans-serif",
               backgroundColor: '#ffffff'
             }}>
-              <span style={{ fontSize: '0.8rem', color: '#8e8b82' }}>
-                Showing {displayRequests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + ITEMS_PER_PAGE, displayRequests.length)} of {displayRequests.length} requests
+              <span style={{ fontSize: '0.8rem', color: '#8e8b82', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Showing {displayRequests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, displayRequests.length)} of {displayRequests.length} requests
+                <span style={{ margin: '0 8px', color: '#ccc' }}>|</span>
+                Show
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(parseInt(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    border: '1px solid #eaeaea',
+                    background: '#faf9f6',
+                    fontSize: '0.8rem',
+                    color: '#555555',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  <option value="3">3</option>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                </select>
+                per page
               </span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button
