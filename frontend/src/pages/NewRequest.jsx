@@ -32,8 +32,8 @@ const DOCUMENT_TYPES = [
 ];
 
 const STUDENT_PROFILES = [
-  { id: 'eleanor', name: 'Eleanor Vance', bemis: 'STU-9824', grade: 'Grade 10', dob: 'October 14, 2006' },
-  { id: 'theodore', name: 'Theodore Hayes', bemis: 'STU-7511', grade: 'Grade 8', dob: 'May 22, 2008' },
+  { id: 'eleanor', name: 'Eleanor Vance', bemis: 'STU-9824', grade: 'Sophomore', dob: 'October 14, 2006' },
+  { id: 'theodore', name: 'Theodore Hayes', bemis: 'STU-7511', grade: 'Freshman', dob: 'May 22, 2008' },
 ];
 
 const NewRequest = () => {
@@ -104,7 +104,7 @@ const NewRequest = () => {
     student_last_name: '',
     student_full_name: isPastStudent ? user?.full_name || '' : 'Eleanor Vance',
     student_bemis_id: isPastStudent ? 'STU-1000' : 'STU-9824',
-    student_graduation_year_or_years_attended: isPastStudent ? '2024' : 'Grade 10',
+    student_graduation_year_or_years_attended: isPastStudent ? '2024' : 'Sophomore',
     delivery_method: 'pickup', // 'pickup', 'mailed', 'emailed'
     delivery_speed: 'standard', // 'standard', 'priority'
     recipient_name: 'University of Cambridge - Admissions Office',
@@ -174,7 +174,7 @@ const NewRequest = () => {
         student_source: 'custom',
         student_full_name: '',
         student_bemis_id: '',
-        student_graduation_year_or_years_attended: 'Grade 9',
+        student_graduation_year_or_years_attended: 'Freshman',
       }));
     } else {
       const prof = STUDENT_PROFILES.find(p => p.id === profileId);
@@ -766,7 +766,7 @@ const NewRequest = () => {
                       />
                       <div>
                         <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#1a1a1a', margin: 0, fontFamily: 'Georgia, serif' }}>Eleanor Vance</h4>
-                        <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>Grade 10 • ID: STU-9824</p>
+                        <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>Sophomore • ID: STU-9824</p>
                       </div>
                     </div>
                     <div style={{
@@ -818,7 +818,7 @@ const NewRequest = () => {
                       </div>
                       <div>
                         <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#1a1a1a', margin: 0, fontFamily: 'Georgia, serif' }}>Theodore Hayes</h4>
-                        <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>Grade 8 • ID: STU-7511</p>
+                        <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>Freshman • ID: STU-7511</p>
                       </div>
                     </div>
                     <div style={{
@@ -902,11 +902,10 @@ const NewRequest = () => {
                         style={{ width: '100%', padding: '0.65rem 0.75rem', border: '1px solid #e2e2e5', borderRadius: '6px', boxSizing: 'border-box', background: '#fafafa' }}
                       >
                         <option value="">Select grade level</option>
-                        <option value="Grade 8">Grade 8</option>
-                        <option value="Grade 9">Grade 9</option>
-                        <option value="Grade 10">Grade 10</option>
-                        <option value="Grade 11">Grade 11</option>
-                        <option value="Grade 12">Grade 12</option>
+                        <option value="Freshman">Freshman</option>
+                        <option value="Sophomore">Sophomore</option>
+                        <option value="Junior">Junior</option>
+                        <option value="Senior">Senior</option>
                       </select>
                     </div>
 
