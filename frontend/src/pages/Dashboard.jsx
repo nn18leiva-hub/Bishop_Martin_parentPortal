@@ -161,6 +161,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploadingReceipt, setUploadingReceipt] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
     loadRequests();
@@ -239,8 +241,14 @@ const Dashboard = () => {
   const displayRequests = [...mockRequests, ...filterNewRequests];
   const activeCount = displayRequests.length; // Shows "3 ACTIVE REQUESTS" as per mockup
 
+  const totalPages = Math.ceil(displayRequests.length / ITEMS_PER_PAGE) || 1;
+  // Adjust current page in case the total count shrinks
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedRequests = displayRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   // Check if any request needs a payment receipt upload
-  const showUploadCol = displayRequests.some(
+  const showUploadCol = paginatedRequests.some(
     req => getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && req.request_id > 10000
   );
 
@@ -386,7 +394,7 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayRequests.map((req) => (
+                  {paginatedRequests.map((req) => (
                     <tr key={req.request_id}>
                       <td style={{ padding: '1.1rem 1.5rem' }}>
                         <div className="db-doc-name" style={{
@@ -438,6 +446,81 @@ const Dashboard = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '1.25rem 1.5rem',
+              borderTop: '1px solid #f0f0f0',
+              fontFamily: "'Inter', sans-serif",
+              backgroundColor: '#ffffff'
+            }}>
+              <span style={{ fontSize: '0.8rem', color: '#8e8b82' }}>
+                Showing {displayRequests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + ITEMS_PER_PAGE, displayRequests.length)} of {displayRequests.length} requests
+              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  disabled={safeCurrentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    color: safeCurrentPage === 1 ? '#ccc' : '#7a0c2e',
+                    cursor: safeCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold',
+                    padding: '0.25rem 0.5rem',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title="Previous Page"
+                >
+                  &lt;
+                </button>
+                {Array.from({ length: totalPages }, (_, idx) => {
+                  const pageNum = idx + 1;
+                  const isActive = safeCurrentPage === pageNum;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      style={{
+                        border: 'none',
+                        background: isActive ? '#7a0c2e' : 'none',
+                        color: isActive ? '#ffffff' : '#8e8b82',
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                <button
+                  disabled={safeCurrentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    color: safeCurrentPage === totalPages ? '#ccc' : '#7a0c2e',
+                    cursor: safeCurrentPage === totalPages ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold',
+                    padding: '0.25rem 0.5rem',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title="Next Page"
+                >
+                  &gt;
+                </button>
+              </div>
             </div>
 
             {/* Footer note */}
