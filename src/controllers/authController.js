@@ -252,4 +252,54 @@ const changeProfilePassword = async (req, res) => {
     }
 };
 
-module.exports = { registerParent, login, forgotPassword, resetPassword, requestProfileCode, changeProfilePassword };
+const uploadAvatar = async (req, res) => {
+    try {
+        const { id, type } = req.user;
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded.' });
+        }
+
+        const avatarPath = `uploads/avatars/${req.file.filename}`;
+
+        if (type === 'staff') {
+            await db.query('UPDATE staff SET avatar_path = $1 WHERE staff_id = $2', [avatarPath, id]);
+        } else {
+            await db.query('UPDATE parents SET avatar_path = $1 WHERE parent_id = $2', [avatarPath, id]);
+        }
+
+        res.json({ message: 'Profile picture updated successfully.', avatar_path: avatarPath });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error uploading profile picture.' });
+    }
+};
+
+const getProfile = async (req, res) => {
+    try {
+        const { id, type } = req.user;
+        if (type === 'staff') {
+            const result = await db.query(
+                'SELECT staff_id as id, full_name, email, role, avatar_path, last_activity, created_at FROM staff WHERE staff_id = $1',
+                [id]
+            );
+            if (result.rows.length === 0) {
+                return res.status(404).json({ message: 'Staff profile not found.' });
+            }
+            res.json(result.rows[0]);
+        } else {
+            const result = await db.query(
+                'SELECT parent_id as id, full_name, email, phone, ssn_card_image_path, verified, user_type, dob, avatar_path, last_activity, created_at FROM parents WHERE parent_id = $1',
+                [id]
+            );
+            if (result.rows.length === 0) {
+                return res.status(404).json({ message: 'Parent profile not found.' });
+            }
+            res.json(result.rows[0]);
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error retrieving profile.' });
+    }
+};
+
+module.exports = { registerParent, login, forgotPassword, resetPassword, requestProfileCode, changeProfilePassword, uploadAvatar, getProfile };

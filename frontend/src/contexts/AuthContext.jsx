@@ -8,18 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Load user profile if we have a token
-  const fetchProfile = async (type, role) => {
+  const fetchProfile = async () => {
     try {
-      if (type === 'staff') {
-         // Dummy set user for staff to keep the context hydrated
-         setUser({ type, role, full_name: 'Admin User' });
-      } else {
-         const data = await apiFetch('/parent/profile');
-         setUser({ ...data, type: data.user_type });
-      }
+      const data = await apiFetch('/auth/profile');
+      setUser({ ...data, type: data.user_type || 'staff' });
     } catch (err) {
       console.error('Failed to load profile', err);
       removeAuthToken();
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -28,12 +24,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        fetchProfile(payload.type, payload.role);
-      } catch (e) {
-        fetchProfile(); // fallback
-      }
+      fetchProfile();
     } else {
       setLoading(false);
     }
@@ -45,13 +36,7 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify({ email, password })
     });
     setAuthToken(res.token);
-    
-    // Only fetch profile if it's a parent/past_student.
-    if (res.type === 'parent' || res.type === 'past_student' || !res.type) {
-      await fetchProfile();
-    } else {
-      setUser({ type: res.type, role: res.role });
-    }
+    await fetchProfile();
     return res;
   };
 

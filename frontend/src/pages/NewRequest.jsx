@@ -40,6 +40,55 @@ const NewRequest = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const renderAvatar = (userObject, size = 32) => {
+    if (userObject?.avatar_path) {
+      const path = userObject.avatar_path.startsWith('/') 
+        ? userObject.avatar_path 
+        : `/${userObject.avatar_path}`;
+      return (
+        <img 
+          src={path} 
+          alt={userObject.full_name || 'User'} 
+          style={{ width: `${size}px`, height: `${size}px`, borderRadius: '50%', objectFit: 'cover' }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.style.display = 'none';
+          }}
+        />
+      );
+    }
+
+    const name = userObject?.full_name || 'User';
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = [
+      '#7a0c2e', '#4f46e5', '#2563eb', '#0284c7', '#0891b2', '#0d9488',
+      '#059669', '#16a34a', '#ca8a04', '#d97706', '#dc2626', '#db2777'
+    ];
+    const bgColor = colors[Math.abs(hash) % colors.length];
+
+    return (
+      <div style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+        backgroundColor: bgColor,
+        color: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 700,
+        fontSize: '0.75rem',
+        fontFamily: "'Inter', sans-serif"
+      }}>
+        {initials}
+      </div>
+    );
+  };
+
   const isPastStudent = user?.user_type === 'past_student' || user?.type === 'past_student';
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -495,15 +544,9 @@ const NewRequest = () => {
                 }}>
                   Upload Form
                 </Link>
-                <img 
-                  src="/principal_avatar.png" 
-                  alt="User" 
-                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} 
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100";
-                  }}
-                />
+                <Link to="/profile" style={{ display: 'inline-flex', textDecoration: 'none' }}>
+                  {renderAvatar(user, 32)}
+                </Link>
               </div>
             </div>
           )}

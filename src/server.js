@@ -12,7 +12,8 @@ const uploadDirs = [
   'uploads/signatures',
   'uploads/ssn_cards',
   'uploads/payment_receipts',
-  'uploads/generated_documents'
+  'uploads/generated_documents',
+  'uploads/avatars'
 ];
 uploadDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
@@ -57,6 +58,13 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// Verify and run table alterations
+const db = require('./config/db');
+db.query('ALTER TABLE parents ADD COLUMN IF NOT EXISTS avatar_path TEXT;')
+  .then(() => db.query('ALTER TABLE staff ADD COLUMN IF NOT EXISTS avatar_path TEXT;'))
+  .then(() => console.log('Database avatar_path columns verified/created.'))
+  .catch(err => console.error('Database migration error:', err.message));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
