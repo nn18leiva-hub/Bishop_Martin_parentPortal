@@ -94,7 +94,7 @@ const Register = () => {
             </div>
 
             <div className="register-login-prompt">
-              Already registered? <Link to="/login" className="register-link-maroon">Log In Here</Link>
+              Already registered? <Link to="/login" className="register-link-maroon">Sign in</Link>
             </div>
 
           </div>

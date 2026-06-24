@@ -163,9 +163,9 @@ const Login = () => {
 
           {/* Bottom Help Text */}
           <div className="login-split-help-text">
-            Experiencing issues?{' '}
+            New user?{' '}
             <Link to="/register" className="login-link-maroon">
-              Contact Administration
+              Register
             </Link>
           </div>
         </div>
