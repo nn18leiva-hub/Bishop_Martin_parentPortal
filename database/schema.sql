@@ -87,5 +87,6 @@ CREATE TABLE password_resets (
     email VARCHAR(255) NOT NULL,
     token VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
+    approved BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -118,11 +118,13 @@ const forgotPassword = async (req, res) => {
 
         // Always return success even if email doesn't exist to prevent email scraping
         if (userCheck.rows.length === 0) {
-            return res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
+            return res.json({ message: 'If that email exists in our system, a password reset request has been initialized.' });
         }
 
-        // Generate 64-char token (hex is 2 chars per byte, so 32 bytes = 64 chars)
-        const resetToken = crypto.randomBytes(32).toString('hex');
+        // Generate 6-digit PIN code as token
+        const min = 100000;
+        const max = 999999;
+        const resetToken = crypto.randomInt(min, max + 1).toString();
         
         // Expiration: 1 hour from now
         const expiresAt = new Date();
@@ -134,13 +136,14 @@ const forgotPassword = async (req, res) => {
             [email, resetToken, expiresAt]
         );
 
-        // Send Email
-        const emailSent = await sendPasswordResetEmail(email, resetToken);
-        if (!emailSent) {
-            return res.status(500).json({ message: 'Failed to dispatch email service.' });
+        // Send Email (silently swallow transport failure)
+        try {
+            await sendPasswordResetEmail(email, resetToken);
+        } catch (emailErr) {
+            console.error('Email dispatch failed or was bypassed:', emailErr);
         }
 
-        res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
+        res.json({ message: 'If that email exists in our system, a password reset request has been initialized. Please ask the Administrator to approve it.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error processing password reset request.' });
@@ -149,31 +152,36 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     try {
-        const { token, newPassword } = req.body;
-        if (!token || !newPassword) return res.status(400).json({ message: 'Token and new password required.' });
+        const { token, newPassword, email } = req.body;
+        if ((!token && !email) || !newPassword) {
+            return res.status(400).json({ message: 'Token/email and new password required.' });
+        }
 
-        // Retrieve valid token
+        // Retrieve valid token or approved reset
         const tokenRes = await db.query(
-            'SELECT email FROM password_resets WHERE token = $1 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
-            [token]
+            `SELECT email FROM password_resets 
+             WHERE (token = $1 OR (email = $2 AND approved = true)) 
+               AND expires_at > NOW() 
+             ORDER BY created_at DESC LIMIT 1`,
+            [token || '', email || '']
         );
 
         if (tokenRes.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid or expired password reset token.' });
+            return res.status(400).json({ message: 'Invalid, expired, or unapproved password reset request.' });
         }
 
-        const email = tokenRes.rows[0].email;
+        const targetEmail = tokenRes.rows[0].email;
         const password_hash = await bcrypt.hash(newPassword, 10);
 
         // Update the password in parents table OR staff table
-        const parentUpdate = await db.query('UPDATE parents SET password_hash = $1 WHERE email = $2 RETURNING parent_id', [password_hash, email]);
+        const parentUpdate = await db.query('UPDATE parents SET password_hash = $1 WHERE email = $2 RETURNING parent_id', [password_hash, targetEmail]);
         
         if (parentUpdate.rows.length === 0) {
-            await db.query('UPDATE staff SET password_hash = $1 WHERE email = $2', [password_hash, email]);
+            await db.query('UPDATE staff SET password_hash = $1 WHERE email = $2', [password_hash, targetEmail]);
         }
 
         // Consume the token (flush all tokens for this email to prevent reuse)
-        await db.query('DELETE FROM password_resets WHERE email = $1', [email]);
+        await db.query('DELETE FROM password_resets WHERE email = $1', [targetEmail]);
 
         res.json({ message: 'Password has been successfully reset. You may now login.' });
     } catch (err) {
@@ -201,13 +209,14 @@ const requestProfileCode = async (req, res) => {
             [email, code, expiresAt]
         );
 
-        // Send Email
-        const emailSent = await sendProfileVerificationCode(email, code);
-        if (!emailSent) {
-            return res.status(500).json({ message: 'Failed to dispatch email service.' });
+        // Send Email (silently swallow transport failure)
+        try {
+            await sendProfileVerificationCode(email, code);
+        } catch (emailErr) {
+            console.error('Profile code email dispatch failed or was bypassed:', emailErr);
         }
 
-        res.json({ message: 'Verification code sent to your email.' });
+        res.json({ message: 'Verification code generated. Please request approval or code from an Administrator.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error processing code request.' });
@@ -220,16 +229,20 @@ const changeProfilePassword = async (req, res) => {
         const { code, newPassword } = req.body;
         
         if (!email) return res.status(400).json({ message: 'Unauthorized request.' });
-        if (!code || !newPassword) return res.status(400).json({ message: 'Code and new password required.' });
+        if (!newPassword) return res.status(400).json({ message: 'New password required.' });
 
-        // Retrieve valid token
+        // Retrieve valid token or approved reset
         const tokenRes = await db.query(
-            'SELECT email FROM password_resets WHERE email = $1 AND token = $2 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
-            [email, code]
+            `SELECT email FROM password_resets 
+             WHERE email = $1 
+               AND (token = $2 OR approved = true) 
+               AND expires_at > NOW() 
+             ORDER BY created_at DESC LIMIT 1`,
+            [email, code || '']
         );
 
         if (tokenRes.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid or expired verification code.' });
+            return res.status(400).json({ message: 'Invalid, expired, or unapproved verification request.' });
         }
 
         const password_hash = await bcrypt.hash(newPassword, 10);
@@ -249,6 +262,27 @@ const changeProfilePassword = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error attempting to change password.' });
+    }
+};
+
+const getResetStatus = async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) return res.status(400).json({ message: 'Email query parameter is required.' });
+
+        const result = await db.query(
+            'SELECT approved FROM password_resets WHERE email = $1 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.json({ active: false, approved: false });
+        }
+
+        res.json({ active: true, approved: result.rows[0].approved });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error retrieving reset status.' });
     }
 };
 
@@ -302,4 +336,4 @@ const getProfile = async (req, res) => {
     }
 };
 
-module.exports = { registerParent, login, forgotPassword, resetPassword, requestProfileCode, changeProfilePassword, uploadAvatar, getProfile };
+module.exports = { registerParent, login, forgotPassword, resetPassword, requestProfileCode, changeProfilePassword, uploadAvatar, getProfile, getResetStatus };

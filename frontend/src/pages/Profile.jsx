@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { KeyRound, Mail, ShieldCheck, User, Camera, Upload } from 'lucide-react';
+import { KeyRound, Mail, ShieldCheck, User, Camera, Upload, CheckCircle } from 'lucide-react';
 import { apiFetch } from '../services/api';
 
 const Profile = () => {
@@ -13,19 +13,47 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isApproved, setIsApproved] = useState(false);
 
   // States for Avatar Upload
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const [avatarSuccess, setAvatarSuccess] = useState('');
 
+  // Polling for admin approval status
+  useEffect(() => {
+    if (stage !== 'awaiting_code' || !user?.email) return;
+
+    let active = true;
+    const checkApproval = async () => {
+      try {
+        const res = await apiFetch(`/auth/reset-status?email=${encodeURIComponent(user.email)}`);
+        if (active && res.approved) {
+          setIsApproved(true);
+          setMessage('Your password reset request has been approved by the Administrator! Click Confirm to finalize.');
+        }
+      } catch (err) {
+        console.error('Failed checking reset status:', err);
+      }
+    };
+
+    checkApproval();
+    const interval = setInterval(checkApproval, 4000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [stage, user?.email]);
+
   const handleRequestCode = async () => {
     setError('');
     setMessage('');
+    setIsApproved(false);
     setStage('requesting');
     try {
       const res = await apiFetch('/auth/request-profile-code', { method: 'POST' });
-      setMessage(res.message || 'Verification code dispatched to your email.');
+      setMessage(res.message || 'Verification code dispatched.');
       setStage('awaiting_code');
     } catch (err) {
       setError(err.message || 'Failed to request code.');
@@ -36,19 +64,20 @@ const Profile = () => {
   const handleVerifyAndChange = async (e) => {
     e.preventDefault();
     if (newPassword.length < 6) return setError('New password must be at least 6 characters.');
-    if (code.length !== 6) return setError('Verification code must be exactly 6 digits.');
+    if (!code && !isApproved) return setError('Verification code is required unless approved by an Administrator.');
 
     setError('');
     setStage('verifying');
     try {
       const res = await apiFetch('/auth/change-profile-password', {
         method: 'POST',
-        body: JSON.stringify({ code, newPassword })
+        body: JSON.stringify({ code: code || '', newPassword })
       });
       setMessage(res.message || 'Password updated successfully!');
       setStage('success');
       setCode('');
       setNewPassword('');
+      setIsApproved(false);
     } catch (err) {
       setError(err.message || 'Failed to change password. Code may be invalid or expired.');
       setStage('awaiting_code');
@@ -255,9 +284,14 @@ const Profile = () => {
                             placeholder="e.g. 123456" 
                             value={code} 
                             onChange={e => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                            required 
+                            required={!isApproved} 
                             style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
                         />
+                        {isApproved && (
+                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <CheckCircle size={14} /> Approved by Administrator
+                            </div>
+                        )}
                     </div>
                     <div className="form-group mb-6" style={{ marginBottom: '1.25rem' }}>
                         <label style={{ color: '#d97706', display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>New Secure Password</label>

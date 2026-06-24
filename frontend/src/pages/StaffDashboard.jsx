@@ -12,6 +12,7 @@ const StaffDashboard = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [pendingParents, setPendingParents] = useState([]);
+  const [pendingResets, setPendingResets] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,10 +42,32 @@ const StaffDashboard = () => {
     }
   };
 
+  const loadPendingResets = async () => {
+    try {
+      const data = await apiFetch('/staff/password-resets');
+      setPendingResets(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load pending resets:', err);
+    }
+  };
+
+  const handleApproveReset = async (email) => {
+    try {
+      await apiFetch('/staff/approve-password-reset', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+      loadPendingResets();
+    } catch (err) {
+      alert('Failed to approve password reset: ' + err.message);
+    }
+  };
+
   useEffect(() => {
     if (user && user.type === 'staff') {
        loadRequests();
        loadPendingParents();
+       loadPendingResets();
        const interval = setInterval(() => {
           apiFetch('/staff/requests').then(data => {
             setRequests(Array.isArray(data) ? data : []);
@@ -52,6 +75,10 @@ const StaffDashboard = () => {
 
           apiFetch('/staff/pending-parents').then(data => {
             setPendingParents(Array.isArray(data) ? data : []);
+          }).catch(err => console.error(err));
+
+          apiFetch('/staff/password-resets').then(data => {
+            setPendingResets(Array.isArray(data) ? data : []);
           }).catch(err => console.error(err));
        }, 15000); 
        return () => clearInterval(interval);
@@ -293,89 +320,156 @@ const StaffDashboard = () => {
 
       {/* ── Parents Verification Section (Only on Approval Queue Page) ── */}
       {isApprovalPage && (
-        <div style={{ marginBottom: '2.5rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
-            Parents Awaiting Identity Verification ({pendingParents.length})
-          </h3>
-          <div className="mock-card" style={{ padding: '0.5rem 0' }}>
-            {pendingParents.length === 0 ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#888888', fontSize: '0.9rem' }}>
-                No parent registration requests currently awaiting identity verification.
-              </div>
-            ) : (
-              <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid #eaeaea' }}>
-                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Parent Name</th>
-                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
-                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</th>
-                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registration Date</th>
-                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification Status</th>
-                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingParents.map((parent, idx) => {
-                      const parts = parent.full_name.split(' ');
-                      const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
-                      return (
-                        <tr key={parent.parent_id || idx} style={{ borderBottom: '1px solid #f9f9f9' }}>
-                          <td style={{ padding: '1.25rem 1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ 
-                              width: 32, 
-                              height: 32, 
-                              borderRadius: '50%', 
-                              background: '#7a0c2e', 
-                              color: '#ffffff', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              fontSize: '0.75rem', 
-                              fontWeight: 700 
-                            }}>
-                              {ini || 'P'}
-                            </div>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{parent.full_name}</span>
+        <>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
+              Parents Awaiting Identity Verification ({pendingParents.length})
+            </h3>
+            <div className="mock-card" style={{ padding: '0.5rem 0' }}>
+              {pendingParents.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#888888', fontSize: '0.9rem' }}>
+                  No parent registration requests currently awaiting identity verification.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Parent Name</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registration Date</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification Status</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingParents.map((parent, idx) => {
+                        const parts = parent.full_name.split(' ');
+                        const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
+                        return (
+                          <tr key={parent.parent_id || idx} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                            <td style={{ padding: '1.25rem 1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{ 
+                                width: 32, 
+                                height: 32, 
+                                borderRadius: '50%', 
+                                background: '#7a0c2e', 
+                                color: '#ffffff', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                fontSize: '0.75rem', 
+                                fontWeight: 700 
+                              }}>
+                                {ini || 'P'}
+                              </div>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{parent.full_name}</span>
+                            </td>
+                            <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.email}</td>
+                            <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.phone || 'N/A'}</td>
+                            <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>
+                              {new Date(parent.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                            <td style={{ padding: '1.25rem 1rem' }}>
+                              <span 
+                                onClick={() => openModal('ssn', parent)} 
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+                              >
+                                <AlertTriangle size={14} /> Verify SSN Card
+                              </span>
+                            </td>
+                            <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
+                              <div style={{ display: 'inline-flex', gap: '8px' }}>
+                                <button 
+                                  onClick={() => handleVerifyIdentityDirect(parent.parent_id, true)} 
+                                  style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                >
+                                  Approve
+                                </button>
+                                <button 
+                                  onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
+                                  style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
+              Pending Password Resets ({pendingResets.length})
+            </h3>
+            <div className="mock-card" style={{ padding: '0.5rem 0' }}>
+              {pendingResets.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#888888', fontSize: '0.9rem' }}>
+                  No parent registration requests currently awaiting password reset approval.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>User Email</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification PIN</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Requested At</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expires At</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                        <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingResets.map((reset, idx) => (
+                        <tr key={reset.id || idx} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{reset.email}</td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.95rem', fontWeight: 700, fontFamily: 'monospace', color: '#7a0c2e', letterSpacing: '1px' }}>
+                            {reset.token}
                           </td>
-                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.email}</td>
-                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.phone || 'N/A'}</td>
                           <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>
-                            {new Date(parent.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            {new Date(reset.created_at).toLocaleString()}
+                          </td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>
+                            {new Date(reset.expires_at).toLocaleString()}
                           </td>
                           <td style={{ padding: '1.25rem 1rem' }}>
-                            <span 
-                              onClick={() => openModal('ssn', parent)} 
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
-                            >
-                              <AlertTriangle size={14} /> Verify SSN Card
-                            </span>
+                            {reset.approved ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(16,185,129,0.1)', color: '#059669', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 20, padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                Approved
+                              </span>
+                            ) : (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(245,158,11,0.1)', color: '#d97706', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 20, padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                Pending Ok
+                              </span>
+                            )}
                           </td>
                           <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', gap: '8px' }}>
+                            {!reset.approved && (
                               <button 
-                                onClick={() => handleVerifyIdentityDirect(parent.parent_id, true)} 
-                                style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                onClick={() => handleApproveReset(reset.email)} 
+                                style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '6px 12px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
                               >
-                                Approve
+                                Give OK / Approve
                               </button>
-                              <button 
-                                onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
-                                style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
-                              >
-                                Reject
-                              </button>
-                            </div>
+                            )}
                           </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* ── Requests Table Card ── */}

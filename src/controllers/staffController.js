@@ -114,4 +114,45 @@ const getPendingParents = async (req, res) => {
     }
 };
 
-module.exports = { getAllRequests, getPendingParents, verifyParent, verifyPayment, updateRequestStatus };
+const getPendingPasswordResets = async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT id, email, token, expires_at, approved, created_at FROM password_resets WHERE expires_at > NOW() ORDER BY created_at DESC'
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error retrieving pending resets.' });
+    }
+};
+
+const approvePasswordReset = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: 'Email is required.' });
+
+        const result = await db.query(
+            'UPDATE password_resets SET approved = TRUE WHERE email = $1 AND expires_at > NOW() RETURNING *',
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No active password reset request found for this email.' });
+        }
+
+        res.json({ message: 'Password reset request approved successfully.', request: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error approving password reset request.' });
+    }
+};
+
+module.exports = { 
+    getAllRequests, 
+    getPendingParents, 
+    verifyParent, 
+    verifyPayment, 
+    updateRequestStatus,
+    getPendingPasswordResets,
+    approvePasswordReset
+};
