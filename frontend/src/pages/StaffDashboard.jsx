@@ -14,6 +14,8 @@ const StaffDashboard = () => {
   const [pendingParents, setPendingParents] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // Modal State
   const [activeModal, setActiveModal] = useState(null); // 'ssn', 'payment', 'info', or null
@@ -205,6 +207,12 @@ const StaffDashboard = () => {
     pageDescription = 'Verify parent identity SSN cards and uploaded bank payment receipts to approve pending requests.';
   }
 
+  // Paginate requests
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage) || 1;
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const paginatedRequests = filteredRequests.slice(startIndex, startIndex + itemsPerPage);
+
   // Stats calculation
   const pendingVerificationCount = requests.filter(r => r.status === 'pending_verification').length + pendingParents.length;
   const paymentsAwaitingCount = requests.filter(r => r.requires_payment && !r.payment_verified && r.receipt_image_path).length;
@@ -385,7 +393,7 @@ const StaffDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredRequests.map((req, i) => {
+              {paginatedRequests.map((req, i) => {
                 const parts = req.student_full_name.split(' ');
                 const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
 
@@ -518,34 +526,94 @@ const StaffDashboard = () => {
         </div>
 
         {/* Table Footer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderTop: '1px solid #eaeaea' }}>
-          <span style={{ fontSize: '0.8rem', color: '#888888' }}>
-            Showing {filteredRequests.length} of {requests.length > 0 ? requests.length : 24} requests
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderTop: '1px solid #eaeaea', backgroundColor: '#faf9f6' }}>
+          <span style={{ fontSize: '0.8rem', color: '#8e8b82', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Showing {filteredRequests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, filteredRequests.length)} of {filteredRequests.length} requests
+            <span style={{ margin: '0 8px', color: '#ccc' }}>|</span>
+            Show
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(parseInt(e.target.value));
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: '1px solid #eaeaea',
+                background: '#faf9f6',
+                fontSize: '0.8rem',
+                color: '#555555',
+                cursor: 'pointer',
+                outline: 'none',
+                fontFamily: "'Inter', sans-serif"
+              }}
+            >
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+            </select>
+            per page
           </span>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button style={{ 
-              background: '#f5f5f5', 
-              border: '1px solid #eaeaea', 
-              borderRadius: '6px', 
-              padding: '0.4rem 0.8rem', 
-              fontSize: '0.8rem', 
-              fontWeight: 600, 
-              color: '#888888',
-              cursor: 'not-allowed'
-            }} disabled>
-              Previous
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              disabled={safeCurrentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              style={{
+                border: 'none',
+                background: 'none',
+                color: safeCurrentPage === 1 ? '#ccc' : '#7a0c2e',
+                cursor: safeCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                padding: '0.25rem 0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Previous Page"
+            >
+              &lt;
             </button>
-            <button style={{ 
-              background: '#7a0c2e', 
-              border: 'none', 
-              borderRadius: '6px', 
-              padding: '0.4rem 0.8rem', 
-              fontSize: '0.8rem', 
-              fontWeight: 600, 
-              color: '#ffffff',
-              cursor: 'pointer'
-            }}>
-              Next Page
+            {Array.from({ length: totalPages }, (_, idx) => {
+              const pageNum = idx + 1;
+              const isActive = safeCurrentPage === pageNum;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  style={{
+                    border: 'none',
+                    background: isActive ? '#7a0c2e' : 'none',
+                    color: isActive ? '#ffffff' : '#8e8b82',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    fontSize: '0.8rem',
+                    fontWeight: isActive ? 700 : 500,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button
+              disabled={safeCurrentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              style={{
+                border: 'none',
+                background: 'none',
+                color: safeCurrentPage === totalPages ? '#ccc' : '#7a0c2e',
+                cursor: safeCurrentPage === totalPages ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                padding: '0.25rem 0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Next Page"
+            >
+              &gt;
             </button>
           </div>
         </div>
