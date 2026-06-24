@@ -180,35 +180,38 @@ const SuperAdminDashboard = () => {
   // Combine database staff list with mock registry
   const displayedStaff = [];
   
-  // Seed the mock staff first as fallbacks/seed layout
-  mockStaff.forEach(m => displayedStaff.push(m));
-  
   // Append actual database staff members dynamically
   staffList.forEach(s => {
-    // Avoid double listing seed emails
-    if (s.email !== 'office@bmhs.edu.bz' && s.email !== 'superadmin@bmhs.edu.bz' && s.email !== 'principal@bmhs.edu.bz') {
-      const parts = s.full_name.split(' ');
-      const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
-      
-      let roleLabel = 'Staff Member';
-      let accessLevel = 'Standard Access';
-      if (s.role === 'principal' || s.role === 'super_admin') {
-        roleLabel = 'Principal';
-        accessLevel = 'Full Admin';
-      }
-      
-      displayedStaff.push({
-        staff_id: s.staff_id,
-        full_name: s.full_name,
-        email: s.email,
-        department: 'Administration',
-        role_label: roleLabel,
-        status: 'Active',
-        access: accessLevel,
-        role: s.role,
-        initials: ini || 'S'
-      });
+    const parts = s.full_name.split(' ');
+    const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
+    
+    let roleLabel = 'Staff Member';
+    let accessLevel = 'Standard Access';
+    if (s.role === 'principal') {
+      roleLabel = 'Principal';
+      accessLevel = 'Full Admin';
+    } else if (s.role === 'super_admin') {
+      roleLabel = 'Super Admin';
+      accessLevel = 'Full Admin';
+    } else if (s.role === 'staff') {
+      roleLabel = 'Staff Member';
+      accessLevel = 'Standard Access';
+    } else if (s.role === 'viewer') {
+      roleLabel = 'Viewer';
+      accessLevel = 'ReadOnly';
     }
+    
+    displayedStaff.push({
+      staff_id: s.staff_id,
+      full_name: s.full_name,
+      email: s.email,
+      department: 'Administration',
+      role_label: roleLabel,
+      status: 'Active',
+      access: accessLevel,
+      role: s.role,
+      initials: ini || 'S'
+    });
   });
 
   // Filter based on search query, department, and role
