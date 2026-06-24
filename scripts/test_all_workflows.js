@@ -82,7 +82,7 @@ async function checkAllWorkflows() {
             headers: { 'Authorization': `Bearer ${parentToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 document_type_id: 4, // enrolment_letter
-                student_full_name: 'Child One',
+                student_full_name: 'Sarah Vance',
                 delivery_method: 'pickup'
             })
         });

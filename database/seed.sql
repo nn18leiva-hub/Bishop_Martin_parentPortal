@@ -22,6 +22,8 @@ INSERT INTO staff (full_name, email, password_hash, role) VALUES
 ('System Principal', 'principal@bmhs.edu.bz', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', 'principal');
 
 -- Default parent account (password is 'password123')
+TRUNCATE TABLE parents RESTART IDENTITY CASCADE;
+
 INSERT INTO parents (full_name, email, phone, password_hash, verified, user_type) VALUES
 ('John Doe', 'john@example.com', '600-1234', '$2b$10$di3t2eLvt18mOC6B7DkXWOBo94dzjmMC2ogxDstFoAQ7fzgIqvOHe', TRUE, 'parent');
 
