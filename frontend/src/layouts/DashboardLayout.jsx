@@ -21,6 +21,20 @@ const DashboardLayout = () => {
     }
   }, [user, loading, navigate]);
 
+  const isVerified = user?.verified || user?.ssn_verified;
+
+  React.useEffect(() => {
+    let interval;
+    if (user && !isVerified) {
+      interval = setInterval(() => {
+        fetchProfile().catch(err => console.error('Error polling parent profile:', err));
+      }, 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [user?.verified, user?.ssn_card_image_path, isVerified]);
+
   if (loading) {
     return (
       <div className="db-loading-screen">
@@ -51,8 +65,6 @@ const DashboardLayout = () => {
     }
   };
 
-  const isVerified = user.verified || user.ssn_verified;
-
   return (
     <div className="db-app-container">
       {/* Sidebar */}
@@ -74,14 +86,24 @@ const DashboardLayout = () => {
             <div className="db-verify-banner-inner">
               <AlertTriangle size={20} className="db-verify-icon" />
               <div>
-                <strong>Verification Required</strong>
-                <p>Please upload your ID to unlock your dashboard features.</p>
+                <strong>{user.ssn_card_image_path ? 'Verification Pending Approval' : 'Verification Required'}</strong>
+                <p>
+                  {user.ssn_card_image_path 
+                    ? 'Your ID scan has been uploaded and is currently under administrative review.' 
+                    : 'Please upload your ID card to verify your identity and unlock all dashboard features.'}
+                </p>
               </div>
             </div>
-            <label className="db-verify-upload-btn">
-              {uploadingSsn ? 'Uploading...' : <><UploadCloud size={16} /> Upload ID</>}
-              <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleSSNUpload} disabled={uploadingSsn} />
-            </label>
+            {user.ssn_card_image_path ? (
+              <span className="db-verify-status-badge" style={{ padding: '0.4rem 1rem', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, color: '#ffffff' }}>
+                Pending Review
+              </span>
+            ) : (
+              <label className="db-verify-upload-btn">
+                {uploadingSsn ? 'Uploading...' : <><UploadCloud size={16} /> Upload ID</>}
+                <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleSSNUpload} disabled={uploadingSsn} />
+              </label>
+            )}
             {ssnError && <p className="db-verify-error">{ssnError}</p>}
           </div>
         )}

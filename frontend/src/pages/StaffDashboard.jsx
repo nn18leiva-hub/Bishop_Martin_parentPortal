@@ -11,6 +11,7 @@ const StaffDashboard = () => {
   const { t } = useSettings();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
+  const [pendingParents, setPendingParents] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -29,12 +30,26 @@ const StaffDashboard = () => {
     }
   };
 
+  const loadPendingParents = async () => {
+    try {
+      const data = await apiFetch('/staff/pending-parents');
+      setPendingParents(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load pending parents:', err);
+    }
+  };
+
   useEffect(() => {
     if (user && user.type === 'staff') {
-       loadRequests(); 
+       loadRequests();
+       loadPendingParents();
        const interval = setInterval(() => {
           apiFetch('/staff/requests').then(data => {
             setRequests(Array.isArray(data) ? data : []);
+          }).catch(err => console.error(err));
+
+          apiFetch('/staff/pending-parents').then(data => {
+            setPendingParents(Array.isArray(data) ? data : []);
           }).catch(err => console.error(err));
        }, 15000); 
        return () => clearInterval(interval);
@@ -64,10 +79,38 @@ const StaffDashboard = () => {
     try {
       await apiFetch('/staff/verify-parent', {
         method: 'POST',
-        body: JSON.stringify({ parent_id: modalPayload.parent_id })
+        body: JSON.stringify({ parent_id: modalPayload.parent_id, approve: true })
       });
       setActiveModal(null);
       loadRequests();
+      loadPendingParents();
+    } catch(err) {
+      alert(err.message);
+    }
+  };
+
+  const handleRejectIdentity = async () => {
+    try {
+      await apiFetch('/staff/verify-parent', {
+        method: 'POST',
+        body: JSON.stringify({ parent_id: modalPayload.parent_id, approve: false })
+      });
+      setActiveModal(null);
+      loadRequests();
+      loadPendingParents();
+    } catch(err) {
+      alert(err.message);
+    }
+  };
+
+  const handleVerifyIdentityDirect = async (parentId, approve) => {
+    try {
+      await apiFetch('/staff/verify-parent', {
+        method: 'POST',
+        body: JSON.stringify({ parent_id: parentId, approve })
+      });
+      loadRequests();
+      loadPendingParents();
     } catch(err) {
       alert(err.message);
     }
@@ -138,7 +181,7 @@ const StaffDashboard = () => {
   ];
 
   // Active requests list
-  const activeRequests = requests.length > 0 ? requests : mockRequests;
+  const activeRequests = requests;
 
   // URL path-based filters
   const isArchivePage = window.location.pathname.includes('/archive');
@@ -163,18 +206,10 @@ const StaffDashboard = () => {
   }
 
   // Stats calculation
-  const pendingVerificationCount = requests.length > 0 
-    ? requests.filter(r => r.status === 'pending_verification').length 
-    : 24;
-  const paymentsAwaitingCount = requests.length > 0 
-    ? requests.filter(r => r.requires_payment && !r.payment_verified && r.receipt_image_path).length 
-    : 12;
-  const readyForPickupCount = requests.length > 0 
-    ? requests.filter(r => r.status === 'ready_for_pickup').length 
-    : 48;
-  const totalProcessedCount = requests.length > 0 
-    ? requests.filter(r => r.status === 'completed').length 
-    : 156;
+  const pendingVerificationCount = requests.filter(r => r.status === 'pending_verification').length + pendingParents.length;
+  const paymentsAwaitingCount = requests.filter(r => r.requires_payment && !r.payment_verified && r.receipt_image_path).length;
+  const readyForPickupCount = requests.filter(r => r.status === 'ready_for_pickup').length;
+  const totalProcessedCount = requests.filter(r => r.status === 'completed').length;
 
   return (
     <div style={{ padding: '1rem 1.5rem 2rem 1.5rem' }}>
@@ -247,6 +282,93 @@ const StaffDashboard = () => {
         </div>
 
       </div>
+
+      {/* ── Parents Verification Section (Only on Approval Queue Page) ── */}
+      {isApprovalPage && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
+            Parents Awaiting Identity Verification ({pendingParents.length})
+          </h3>
+          <div className="mock-card" style={{ padding: '0.5rem 0' }}>
+            {pendingParents.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#888888', fontSize: '0.9rem' }}>
+                No parent registration requests currently awaiting identity verification.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Parent Name</th>
+                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
+                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</th>
+                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registration Date</th>
+                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification Status</th>
+                      <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingParents.map((parent, idx) => {
+                      const parts = parent.full_name.split(' ');
+                      const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
+                      return (
+                        <tr key={parent.parent_id || idx} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                          <td style={{ padding: '1.25rem 1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ 
+                              width: 32, 
+                              height: 32, 
+                              borderRadius: '50%', 
+                              background: '#7a0c2e', 
+                              color: '#ffffff', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 700 
+                            }}>
+                              {ini || 'P'}
+                            </div>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{parent.full_name}</span>
+                          </td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.email}</td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.phone || 'N/A'}</td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>
+                            {new Date(parent.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </td>
+                          <td style={{ padding: '1.25rem 1rem' }}>
+                            <span 
+                              onClick={() => openModal('ssn', parent)} 
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+                            >
+                              <AlertTriangle size={14} /> Verify SSN Card
+                            </span>
+                          </td>
+                          <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '8px' }}>
+                              <button 
+                                onClick={() => handleVerifyIdentityDirect(parent.parent_id, true)} 
+                                style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Approve
+                              </button>
+                              <button 
+                                onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
+                                style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Requests Table Card ── */}
       <div className="mock-card" style={{ padding: '0.5rem 0' }}>
@@ -462,16 +584,21 @@ const StaffDashboard = () => {
                    />
                  </div>
                  <div className="flex gap-4">
-                    {activeModal === 'ssn' ? (
-                      <button onClick={handleApproveIdentity} className="btn-primary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', background: '#7a0c2e', border: 'none', color: '#ffffff' }}>
-                        <CheckCircle size={18}/> Formally Approve Identity
-                      </button>
-                    ) : (
-                      <button onClick={handleApprovePayment} className="btn-primary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', backgroundColor: '#10b981', borderColor: '#059669', color: '#ffffff' }}>
-                        <CheckCircle size={18}/> Formally Approve Payment
-                      </button>
-                    )}
-                 </div>
+                     {activeModal === 'ssn' ? (
+                       <>
+                         <button onClick={handleApproveIdentity} className="btn-primary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer' }}>
+                           <CheckCircle size={18}/> Formally Approve Identity
+                         </button>
+                         <button onClick={handleRejectIdentity} className="btn-secondary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer' }}>
+                           <XCircle size={18}/> Reject Identity
+                         </button>
+                       </>
+                     ) : (
+                       <button onClick={handleApprovePayment} className="btn-primary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', backgroundColor: '#10b981', borderColor: '#059669', color: '#ffffff' }}>
+                         <CheckCircle size={18}/> Formally Approve Payment
+                       </button>
+                     )}
+                  </div>
                </>
             )}
 

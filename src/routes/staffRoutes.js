@@ -7,6 +7,7 @@ const requireRole = require('../middleware/roleMiddleware');
 router.use(authenticate, requireRole('staff'));
 
 router.get('/requests', staffController.getAllRequests);
+router.get('/pending-parents', staffController.getPendingParents);
 router.post('/verify-parent', staffController.verifyParent);
 router.post('/verify-payment', staffController.verifyPayment);
 router.post('/update-request-status', staffController.updateRequestStatus);

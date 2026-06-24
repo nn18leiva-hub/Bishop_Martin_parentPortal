@@ -29,8 +29,13 @@ const getAllRequests = async (req, res) => {
 
 const verifyParent = async (req, res) => {
     try {
-        const { parent_id } = req.body;
+        const { parent_id, approve } = req.body;
         if (!parent_id) return res.status(400).json({ message: 'parent_id is required.' });
+
+        if (approve === false) {
+            await db.query('UPDATE parents SET ssn_card_image_path = NULL, verified = FALSE WHERE parent_id = $1', [parent_id]);
+            return res.json({ message: 'Identity verification rejected. Parent has been reset to unverified.' });
+        }
 
         await db.query('UPDATE parents SET verified = TRUE WHERE parent_id = $1', [parent_id]);
         
@@ -85,4 +90,28 @@ const updateRequestStatus = async (req, res) => {
     }
 };
 
-module.exports = { getAllRequests, verifyParent, verifyPayment, updateRequestStatus };
+const getPendingParents = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT 
+                parent_id, 
+                full_name, 
+                email, 
+                phone, 
+                ssn_card_image_path, 
+                verified, 
+                user_type, 
+                created_at 
+            FROM parents 
+            WHERE ssn_card_image_path IS NOT NULL 
+              AND (verified = FALSE OR verified IS NULL)
+            ORDER BY created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+module.exports = { getAllRequests, getPendingParents, verifyParent, verifyPayment, updateRequestStatus };
