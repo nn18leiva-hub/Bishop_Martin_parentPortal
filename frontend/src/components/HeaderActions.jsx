@@ -1,29 +1,133 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Bell, Settings, Sun, Moon, Check, XCircle, CheckCircle, Globe } from 'lucide-react';
 import { useSettings } from '../contexts/ThemeLanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 
 const HeaderActions = () => {
   const { theme, toggleTheme, language, setLanguage, t } = useSettings();
+  const { user } = useAuth();
   
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [parentRequests, setParentRequests] = useState([]);
+  const [readNotificationIds, setReadNotificationIds] = useState([]);
 
-  // Simulated notifications state
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "New official transcript request submitted by John Doe", read: false, time: "5m ago" },
-    { id: 2, text: "Payment receipt uploaded for request #TR-4022", read: false, time: "20m ago" },
-    { id: 3, text: "Verification card approved for Theodore Hayes", read: true, time: "2h ago" },
-    { id: 4, text: "System security backup completed successfully", read: true, time: "1d ago" }
-  ]);
+  useEffect(() => {
+    if (user && (user.type === 'parent' || user.type === 'past_student')) {
+      const loadParentReqs = () => {
+        apiFetch('/requests/my-requests')
+          .then(data => {
+            setParentRequests(Array.isArray(data) ? data : []);
+          })
+          .catch(err => console.error('Failed to load notifications requests:', err));
+      };
+      
+      loadParentReqs();
+      const interval = setInterval(loadParentReqs, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  // Dynamically compute notifications specific to the logged-in user
+  const notifications = useMemo(() => {
+    if (!user) return [];
+
+    if (user.type === 'staff') {
+      // Administrative notifications
+      const baseStaffList = [
+        { id: 'staff-1', text: "New official transcript request submitted by John Doe", read: false, time: "5m ago" },
+        { id: 'staff-2', text: "Payment receipt uploaded for request #TR-4022", read: false, time: "20m ago" },
+        { id: 'staff-3', text: "Verification card approved for Theodore Hayes", read: true, time: "2h ago" },
+        { id: 'staff-4', text: "System security backup completed successfully", read: true, time: "1d ago" }
+      ];
+      return baseStaffList.map(n => ({
+        ...n,
+        read: readNotificationIds.includes(n.id) ? true : n.read
+      }));
+    }
+
+    // Parent / Past Student specific notifications
+    const list = [];
+    let idCounter = 1;
+
+    // 1. Identity Verification Notification
+    if (user.verified) {
+      list.push({
+        id: `parent-ver-${idCounter++}`,
+        text: `Identity verification approved! Welcome to the Bishop Martin Parent Portal, ${user.full_name}.`,
+        read: false,
+        time: "Just now"
+      });
+    } else if (user.ssn_card_image_path) {
+      list.push({
+        id: `parent-ver-${idCounter++}`,
+        text: "Identity verification scan submitted. Administrative review is pending.",
+        read: false,
+        time: "10m ago"
+      });
+    } else {
+      list.push({
+        id: `parent-ver-${idCounter++}`,
+        text: "Action Required: Please upload your ID scan to verify your identity.",
+        read: false,
+        time: "1h ago"
+      });
+    }
+
+    // 2. Document Request Status Notifications
+    parentRequests.forEach(req => {
+      const docName = (req.document_type_name || '').replace(/_/g, ' ').toUpperCase();
+      const studentName = req.student_full_name;
+
+      if (req.status === 'ready_for_pickup') {
+        list.push({
+          id: `parent-req-${req.request_id}`,
+          text: `Your ${docName} request for ${studentName} is ready for pickup!`,
+          read: false,
+          time: "Recently"
+        });
+      } else if (req.status === 'denied') {
+        list.push({
+          id: `parent-req-${req.request_id}`,
+          text: `Your ${docName} request for ${studentName} was denied. Please contact administration.`,
+          read: false,
+          time: "Recently"
+        });
+      } else if (req.status === 'pending_verification') {
+        list.push({
+          id: `parent-req-${req.request_id}`,
+          text: `Your ${docName} request for ${studentName} is currently under administrative verification.`,
+          read: true,
+          time: "1h ago"
+        });
+      } else if (req.status === 'pending' && req.requires_payment && !req.payment_verified && !req.receipt_image_path) {
+        list.push({
+          id: `parent-req-${req.request_id}`,
+          text: `Action Required: Please upload your bank payment receipt for the ${docName} request.`,
+          read: false,
+          time: "Recently"
+        });
+      }
+    });
+
+    return list.map(n => ({
+      ...n,
+      read: readNotificationIds.includes(n.id) ? true : n.read
+    }));
+  }, [user, parentRequests, readNotificationIds]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const allIds = notifications.map(n => n.id);
+    setReadNotificationIds(allIds);
   };
 
   const toggleRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+    setReadNotificationIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
   // Click outside to close notifications dropdown
