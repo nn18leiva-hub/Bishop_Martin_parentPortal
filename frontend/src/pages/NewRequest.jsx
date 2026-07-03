@@ -96,15 +96,17 @@ const NewRequest = () => {
   const [error, setError] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const [studentProfiles, setStudentProfiles] = useState([]);
+
   const [formData, setFormData] = useState({
     document_type_id: 1, // Default to transcript (ID 1)
-    student_source: isPastStudent ? 'self' : 'profile', // 'profile', 'custom', or 'self'
-    selected_profile_id: isPastStudent ? 'self' : 'eleanor', // 'eleanor', 'theodore', 'custom', or 'self'
+    student_source: isPastStudent ? 'self' : 'custom', // 'profile', 'custom', or 'self'
+    selected_profile_id: isPastStudent ? 'self' : 'custom', // 'eleanor', 'theodore', 'custom', or 'self'
     student_first_name: '',
     student_last_name: '',
-    student_full_name: isPastStudent ? user?.full_name || '' : 'Eleanor Vance',
-    student_bemis_id: isPastStudent ? 'STU-1000' : 'STU-9824',
-    student_graduation_year_or_years_attended: isPastStudent ? '2024' : 'Sophomore',
+    student_full_name: isPastStudent ? user?.full_name || '' : '',
+    student_bemis_id: isPastStudent ? 'STU-1000' : '',
+    student_graduation_year_or_years_attended: isPastStudent ? '2024' : 'Freshman',
     delivery_method: 'pickup', // 'pickup', 'mailed', 'emailed'
     delivery_speed: 'standard', // 'standard', 'priority'
     recipient_name: 'University of Cambridge - Admissions Office',
@@ -120,19 +122,76 @@ const NewRequest = () => {
 
   const sigCanvas = useRef(null);
 
+  // Load dynamic student profiles or seed mock data for test users
+  useEffect(() => {
+    if (!user) return;
+    
+    const isTestUser = user.email === 'parent@test.com' || user.email?.endsWith('@test.com');
+    
+    if (isTestUser) {
+      setStudentProfiles([
+        { id: 'eleanor', name: 'Eleanor Vance', bemis: 'STU-9824', grade: 'Sophomore', dob: 'October 14, 2006', avatar: '/eleanor_avatar.png' },
+        { id: 'theodore', name: 'Theodore Hayes', bemis: 'STU-7511', grade: 'Freshman', dob: 'May 22, 2008' }
+      ]);
+    } else {
+      apiFetch('/requests/my-requests')
+        .then(data => {
+          if (Array.isArray(data)) {
+            const uniqueStudents = {};
+            data.forEach(req => {
+              const bemis = req.student_bemis_id || '';
+              const name = req.student_full_name;
+              if (name && !uniqueStudents[name]) {
+                uniqueStudents[name] = {
+                  id: bemis ? `db-${bemis}` : `db-${name}`,
+                  name: name,
+                  bemis: bemis,
+                  grade: req.student_graduation_year_or_years_attended || 'Freshman'
+                };
+              }
+            });
+            setStudentProfiles(Object.values(uniqueStudents));
+          }
+        })
+        .catch(err => {
+          console.error('Failed to load previous requests for student profiles:', err);
+          setStudentProfiles([]);
+        });
+    }
+  }, [user]);
+
+  // Adjust form defaults once profiles are resolved
   useEffect(() => {
     if (isPastStudent) {
       setFormData(prev => ({
         ...prev,
-        document_type_id: 1,
         student_source: 'self',
         selected_profile_id: 'self',
         student_full_name: user?.full_name || '',
         student_bemis_id: 'STU-1000',
         student_graduation_year_or_years_attended: '2024',
       }));
+    } else if (studentProfiles.length > 0) {
+      const first = studentProfiles[0];
+      setFormData(prev => ({
+        ...prev,
+        student_source: 'profile',
+        selected_profile_id: first.id,
+        student_full_name: first.name,
+        student_bemis_id: first.bemis || '',
+        student_graduation_year_or_years_attended: first.grade || 'Freshman',
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        student_source: 'custom',
+        selected_profile_id: 'custom',
+        student_full_name: '',
+        student_bemis_id: '',
+        student_graduation_year_or_years_attended: 'Freshman',
+      }));
     }
-  }, [user, isPastStudent]);
+  }, [studentProfiles, isPastStudent, user]);
 
   const selectedType = DOCUMENT_TYPES.find(d => d.id === parseInt(formData.document_type_id)) || DOCUMENT_TYPES[0];
   const isCustomRequest = selectedType.name === 'custom_request';
@@ -177,7 +236,7 @@ const NewRequest = () => {
         student_graduation_year_or_years_attended: 'Freshman',
       }));
     } else {
-      const prof = STUDENT_PROFILES.find(p => p.id === profileId);
+      const prof = studentProfiles.find(p => p.id === profileId);
       if (prof) {
         setFormData(prev => ({
           ...prev,
@@ -736,106 +795,81 @@ const NewRequest = () => {
                   RECENTLY USED PROFILES
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  
-                  {/* Eleanor Vance Card */}
-                  <div 
-                    onClick={() => handleProfileSelect('eleanor')}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #eaeaea',
-                      borderLeft: `4px solid ${formData.selected_profile_id === 'eleanor' ? '#7a0c2e' : 'transparent'}`,
-                      borderRadius: '8px',
-                      padding: '1rem 1.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img 
-                        src="/eleanor_avatar.png" 
-                        alt="Eleanor Vance" 
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100";
+                  {studentProfiles.length === 0 ? (
+                    <div style={{ padding: '2rem', border: '1px dashed #eaeaea', borderRadius: '8px', textAlign: 'center', background: '#faf9f6' }}>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#888888', fontFamily: "'Inter', sans-serif" }}>
+                        No recently used student profiles. Please use the form on the right to enter details.
+                      </p>
+                    </div>
+                  ) : (
+                    studentProfiles.map(prof => (
+                      <div 
+                        key={prof.id}
+                        onClick={() => handleProfileSelect(prof.id)}
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #eaeaea',
+                          borderLeft: `4px solid ${formData.selected_profile_id === prof.id ? '#7a0c2e' : 'transparent'}`,
+                          borderRadius: '8px',
+                          padding: '1rem 1.25rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          boxSizing: 'border-box'
                         }}
-                      />
-                      <div>
-                        <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#1a1a1a', margin: 0, fontFamily: 'Georgia, serif' }}>Eleanor Vance</h4>
-                        <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>Sophomore • ID: STU-9824</p>
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          {prof.avatar ? (
+                            <img 
+                              src={prof.avatar} 
+                              alt={prof.name} 
+                              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100";
+                              }}
+                            />
+                          ) : (
+                            <div style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              background: '#d0e1fd',
+                              color: '#1e4a8a',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 'bold',
+                              fontSize: '0.85rem'
+                            }}>
+                              {prof.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#1a1a1a', margin: 0, fontFamily: 'Georgia, serif' }}>{prof.name}</h4>
+                            <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>
+                              {prof.grade} {prof.bemis ? `• ID: ${prof.bemis}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          border: '1.5px solid #ccc',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: formData.selected_profile_id === prof.id ? '#7a0c2e' : 'transparent',
+                          borderColor: formData.selected_profile_id === prof.id ? '#7a0c2e' : '#ccc'
+                        }}>
+                          {formData.selected_profile_id === prof.id && <Check size={12} color="#fff" strokeWidth={3} />}
+                        </div>
                       </div>
-                    </div>
-                    <div style={{
-                      width: '18px',
-                      height: '18px',
-                      borderRadius: '50%',
-                      border: '1.5px solid #ccc',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: formData.selected_profile_id === 'eleanor' ? '#7a0c2e' : 'transparent',
-                      borderColor: formData.selected_profile_id === 'eleanor' ? '#7a0c2e' : '#ccc'
-                    }}>
-                      {formData.selected_profile_id === 'eleanor' && <Check size={12} color="#fff" strokeWidth={3} />}
-                    </div>
-                  </div>
-
-                  {/* Theodore Hayes Card */}
-                  <div 
-                    onClick={() => handleProfileSelect('theodore')}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #eaeaea',
-                      borderLeft: `4px solid ${formData.selected_profile_id === 'theodore' ? '#7a0c2e' : 'transparent'}`,
-                      borderRadius: '8px',
-                      padding: '1rem 1.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        background: '#d0e1fd',
-                        color: '#1e4a8a',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem'
-                      }}>
-                        TH
-                      </div>
-                      <div>
-                        <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#1a1a1a', margin: 0, fontFamily: 'Georgia, serif' }}>Theodore Hayes</h4>
-                        <p style={{ fontSize: '0.78rem', color: '#888888', margin: '3px 0 0 0', fontFamily: "'Inter', sans-serif" }}>Freshman • ID: STU-7511</p>
-                      </div>
-                    </div>
-                    <div style={{
-                      width: '18px',
-                      height: '18px',
-                      borderRadius: '50%',
-                      border: '1.5px solid #ccc',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: formData.selected_profile_id === 'theodore' ? '#7a0c2e' : 'transparent',
-                      borderColor: formData.selected_profile_id === 'theodore' ? '#7a0c2e' : '#ccc'
-                    }}>
-                      {formData.selected_profile_id === 'theodore' && <Check size={12} color="#fff" strokeWidth={3} />}
-                    </div>
-                  </div>
-
+                    ))
+                  )}
                 </div>
               </div>
 
