@@ -125,15 +125,11 @@ const forgotPassword = async (req, res) => {
         const min = 100000;
         const max = 999999;
         const resetToken = crypto.randomInt(min, max + 1).toString();
-        
-        // Expiration: 1 hour from now
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 1);
 
         // Store in DB
         await db.query(
-            'INSERT INTO password_resets (email, token, expires_at) VALUES ($1, $2, $3)',
-            [email, resetToken, expiresAt]
+            "INSERT INTO password_resets (email, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL '1 hour')",
+            [email, resetToken]
         );
 
         // Send Email (silently swallow transport failure)
@@ -200,13 +196,10 @@ const requestProfileCode = async (req, res) => {
         const max = 999999;
         const code = crypto.randomInt(min, max + 1).toString();
 
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Short expiry
-
         // Store in DB
         await db.query(
-            'INSERT INTO password_resets (email, token, expires_at) VALUES ($1, $2, $3)',
-            [email, code, expiresAt]
+            "INSERT INTO password_resets (email, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL '15 minutes')",
+            [email, code]
         );
 
         // Send Email (silently swallow transport failure)
