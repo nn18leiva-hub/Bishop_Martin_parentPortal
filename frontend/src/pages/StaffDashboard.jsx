@@ -63,6 +63,19 @@ const StaffDashboard = () => {
     }
   };
 
+  const handleDeleteReset = async (id) => {
+    if (window.confirm("Are you sure you want to delete this password reset request?")) {
+      try {
+        await apiFetch(`/staff/password-reset/${id}`, {
+          method: 'DELETE'
+        });
+        loadPendingResets();
+      } catch (err) {
+        alert('Failed to delete password reset request: ' + err.message);
+      }
+    }
+  };
+
   useEffect(() => {
     if (user && user.type === 'staff') {
        loadRequests();
@@ -372,27 +385,44 @@ const StaffDashboard = () => {
                               {new Date(parent.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </td>
                             <td style={{ padding: '1.25rem 1rem' }}>
-                              <span 
-                                onClick={() => openModal('ssn', parent)} 
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
-                              >
-                                <AlertTriangle size={14} /> Verify SSN Card
-                              </span>
+                              {parent.verified ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(16,185,129,0.1)', color: '#059669', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 20, padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                  Approved
+                                </span>
+                              ) : (
+                                <span 
+                                  onClick={() => openModal('ssn', parent)} 
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+                                >
+                                  <AlertTriangle size={14} /> Verify SSN Card
+                                </span>
+                              )}
                             </td>
                             <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
                               <div style={{ display: 'inline-flex', gap: '8px' }}>
-                                <button 
-                                  onClick={() => handleVerifyIdentityDirect(parent.parent_id, true)} 
-                                  style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
-                                >
-                                  Approve
-                                </button>
-                                <button 
-                                  onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
-                                  style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
-                                >
-                                  Reject
-                                </button>
+                                {parent.verified ? (
+                                  <button 
+                                    onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
+                                    style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                  >
+                                    Delete
+                                  </button>
+                                ) : (
+                                  <>
+                                    <button 
+                                      onClick={() => handleVerifyIdentityDirect(parent.parent_id, true)} 
+                                      style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                    >
+                                      Approve
+                                    </button>
+                                    <button 
+                                      onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
+                                      style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                    >
+                                      Reject
+                                    </button>
+                                  </>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -452,7 +482,14 @@ const StaffDashboard = () => {
                             )}
                           </td>
                           <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
-                            {!reset.approved && (
+                            {reset.approved ? (
+                              <button 
+                                onClick={() => handleDeleteReset(reset.id)} 
+                                style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '6px 12px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Delete
+                              </button>
+                            ) : (
                               <button 
                                 onClick={() => handleApproveReset(reset.email)} 
                                 style={{ background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '6px 12px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}

@@ -13,5 +13,6 @@ router.post('/verify-payment', staffController.verifyPayment);
 router.post('/update-request-status', staffController.updateRequestStatus);
 router.get('/password-resets', staffController.getPendingPasswordResets);
 router.post('/approve-password-reset', staffController.approvePasswordReset);
+router.delete('/password-reset/:id', staffController.deletePasswordReset);
 
 module.exports = router;
