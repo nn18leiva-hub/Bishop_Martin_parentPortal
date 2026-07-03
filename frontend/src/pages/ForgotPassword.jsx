@@ -128,23 +128,24 @@ const ForgotPassword = () => {
 
         {stage === 'awaiting_code' && (
           <form onSubmit={handleResetPassword}>
-            <div className="form-group mb-3">
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>6-Digit Verification PIN</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="e.g. 123456" 
-                value={code} 
-                onChange={e => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                required={!isApproved} 
-                style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
-              />
-              {isApproved && (
-                <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <CheckCircle size={14} /> Approved by Administrator
-                </div>
-              )}
-            </div>
+             {isApproved ? (
+               <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '12px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <CheckCircle size={16} /> Approved by Administrator
+               </div>
+             ) : (
+               <div className="form-group mb-3">
+                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>6-Digit Verification PIN</label>
+                 <input 
+                   type="text" 
+                   className="form-input" 
+                   placeholder="e.g. 123456" 
+                   value={code} 
+                   onChange={e => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                   required 
+                   style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
+                 />
+               </div>
+             )}
 
             <div className="form-group mb-3">
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>New Password</label>
