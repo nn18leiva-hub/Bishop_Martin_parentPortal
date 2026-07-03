@@ -54,7 +54,7 @@ app.use('/api/superadmin', superAdminRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Global Error Handler Caught:", err.message, "Field:", err.field);
-  res.status(500).json({ error: err.message, field: err.field });
+  res.status(500).json({ error: err.message, message: err.message, field: err.field });
 });
 
 const PORT = process.env.PORT || 3000;

@@ -33,13 +33,13 @@ const fileFilter = (req, file, cb) => {
 
 const uploadSSN = multer({
     storage: ssnStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
     fileFilter
 });
 
 const uploadReceipt = multer({
     storage: receiptStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
     fileFilter
 });
 
@@ -55,7 +55,7 @@ const avatarStorage = multer.diskStorage({
 
 const uploadAvatar = multer({
     storage: avatarStorage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (allowedTypes.includes(file.mimetype)) {
