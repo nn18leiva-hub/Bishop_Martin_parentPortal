@@ -167,6 +167,27 @@ const deletePasswordReset = async (req, res) => {
     }
 };
 
+const deleteRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) return res.status(400).json({ message: 'Request ID is required.' });
+
+        const result = await db.query(
+            'DELETE FROM document_requests WHERE request_id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Request not found.' });
+        }
+
+        res.json({ message: 'Request deleted successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error deleting request.' });
+    }
+};
+
 module.exports = { 
     getAllRequests, 
     getPendingParents, 
@@ -175,5 +196,6 @@ module.exports = {
     updateRequestStatus,
     getPendingPasswordResets,
     approvePasswordReset,
-    deletePasswordReset
+    deletePasswordReset,
+    deleteRequest
 };

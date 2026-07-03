@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
-import { LogOut, Eye, CheckCircle, XCircle, FileText, Activity, Users, FileCheck, Info, AlertTriangle, MoreVertical, Search } from 'lucide-react';
+import { LogOut, Eye, CheckCircle, XCircle, FileText, Activity, Users, FileCheck, Info, AlertTriangle, MoreVertical, Search, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSettings } from '../contexts/ThemeLanguageContext';
@@ -72,6 +72,19 @@ const StaffDashboard = () => {
         loadPendingResets();
       } catch (err) {
         alert('Failed to delete password reset request: ' + err.message);
+      }
+    }
+  };
+
+  const handleDeleteRequest = async (id) => {
+    if (window.confirm("Are you sure you want to delete this document request?")) {
+      try {
+        await apiFetch(`/staff/request/${id}`, {
+          method: 'DELETE'
+        });
+        loadRequests();
+      } catch (err) {
+        alert('Failed to delete document request: ' + err.message);
       }
     }
   };
@@ -640,13 +653,22 @@ const StaffDashboard = () => {
 
                     {/* Actions Menu */}
                     <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
-                      <button 
-                        onClick={() => openModal('info', req)}
-                        style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}
-                        title="View Details"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
+                      <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        <button 
+                          onClick={() => openModal('info', req)}
+                          style={{ background: 'none', border: 'none', color: '#888888', cursor: 'pointer', padding: '4px' }}
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteRequest(req.request_id)}
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                          title="Delete Request"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
 
                   </tr>
