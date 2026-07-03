@@ -11,10 +11,15 @@ const HeaderActions = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [parentRequests, setParentRequests] = useState([]);
+  const [staffPendingParents, setStaffPendingParents] = useState([]);
+  const [staffPendingRequests, setStaffPendingRequests] = useState([]);
+  const [staffPendingResets, setStaffPendingResets] = useState([]);
   const [readNotificationIds, setReadNotificationIds] = useState([]);
 
   useEffect(() => {
-    if (user && (user.type === 'parent' || user.type === 'past_student')) {
+    if (!user) return;
+
+    if (user.type === 'parent' || user.type === 'past_student') {
       const loadParentReqs = () => {
         apiFetch('/requests/my-requests')
           .then(data => {
@@ -26,6 +31,30 @@ const HeaderActions = () => {
       loadParentReqs();
       const interval = setInterval(loadParentReqs, 15000);
       return () => clearInterval(interval);
+    } else if (user.type === 'staff') {
+      const loadStaffData = () => {
+        apiFetch('/staff/pending-parents')
+          .then(data => {
+            setStaffPendingParents(Array.isArray(data) ? data : []);
+          })
+          .catch(err => console.error('Failed to load pending parents for notifications:', err));
+
+        apiFetch('/staff/requests')
+          .then(data => {
+            setStaffPendingRequests(Array.isArray(data) ? data : []);
+          })
+          .catch(err => console.error('Failed to load requests for notifications:', err));
+
+        apiFetch('/staff/password-resets')
+          .then(data => {
+            setStaffPendingResets(Array.isArray(data) ? data : []);
+          })
+          .catch(err => console.error('Failed to load password resets for notifications:', err));
+      };
+
+      loadStaffData();
+      const interval = setInterval(loadStaffData, 15000);
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -34,14 +63,44 @@ const HeaderActions = () => {
     if (!user) return [];
 
     if (user.type === 'staff') {
-      // Administrative notifications
-      const baseStaffList = [
-        { id: 'staff-1', text: "New official transcript request submitted by John Doe", read: false, time: "5m ago" },
-        { id: 'staff-2', text: "Payment receipt uploaded for request #TR-4022", read: false, time: "20m ago" },
-        { id: 'staff-3', text: "Verification card approved for Theodore Hayes", read: true, time: "2h ago" },
-        { id: 'staff-4', text: "System security backup completed successfully", read: true, time: "1d ago" }
-      ];
-      return baseStaffList.map(n => ({
+      // Administrative notifications based on real DB items
+      const list = [];
+
+      // 1. Parents awaiting identity verification notifications
+      staffPendingParents.forEach(p => {
+        list.push({
+          id: `staff-parent-ver-${p.parent_id}`,
+          text: `Identity Verification Required: parent "${p.full_name}" submitted their SSN Card.`,
+          read: false,
+          time: "Pending Review"
+        });
+      });
+
+      // 2. Pending payment verification requests
+      staffPendingRequests.forEach(req => {
+        if (req.requires_payment && !req.payment_verified && req.receipt_image_path) {
+          list.push({
+            id: `staff-payment-val-${req.request_id}`,
+            text: `Payment Approval Required: New receipt uploaded for ${req.student_full_name} (${(req.document_type_name || '').replace(/_/g, ' ')})`,
+            read: false,
+            time: "Awaiting Validation"
+          });
+        }
+      });
+
+      // 3. Pending Password Reset approvals
+      staffPendingResets.forEach(reset => {
+        if (!reset.approved) {
+          list.push({
+            id: `staff-reset-app-${reset.id}`,
+            text: `Password Reset Approval Requested by ${reset.email} (PIN: ${reset.token})`,
+            read: false,
+            time: "Awaiting Action"
+          });
+        }
+      });
+
+      return list.map(n => ({
         ...n,
         read: readNotificationIds.includes(n.id) ? true : n.read
       }));
@@ -115,7 +174,7 @@ const HeaderActions = () => {
       ...n,
       read: readNotificationIds.includes(n.id) ? true : n.read
     }));
-  }, [user, parentRequests, readNotificationIds]);
+  }, [user, parentRequests, staffPendingParents, staffPendingRequests, staffPendingResets, readNotificationIds]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
