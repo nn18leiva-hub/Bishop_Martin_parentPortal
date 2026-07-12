@@ -15,6 +15,25 @@
   --success-color: #10b981;
   --nav-height: 72px;
   --sidebar-width: 290px;
+  --page-bg: #faf9f6;
+  --card-bg: #ffffff;
+  --border-color: #eaeaea;
+  --table-header-bg: #faf9f6;
+  --sidebar-icon-bg: #e6e4e0;
+  --text-color: #2c2c2c;
+  --text-sub: #666663;
+  --text-muted: #8e8b82;
+  --text-value: #2d2d2d;
+  --divider: #f0f0f0;
+  --step-inactive-bg: #ffffff;
+  --step-inactive-border: #cccccc;
+  --pending-bg: #fbf5e1;
+  --timeline-divider: #eaeaea;
+  --secondary-btn: #ffffff;
+  --secondary-btn-border: #dcdad5;
+  --secondary-btn-text: #4a4743;
+  --ref-text-color: #4a4743;
+  --breadcrumb-sub: #888888;
 }
 
 * {
@@ -1048,26 +1067,7 @@ select:-webkit-autofill:focus {
 .db-app-container {
   display: flex;
   min-height: 100vh;
-  background-color: #faf9f6;
-  --page-bg: #faf9f6;
-  --card-bg: #ffffff;
-  --border-color: #eaeaea;
-  --table-header-bg: #faf9f6;
-  --sidebar-icon-bg: #e6e4e0;
-  --text-color: #2c2c2c;
-  --text-sub: #666663;
-  --text-muted: #8e8b82;
-  --text-value: #2d2d2d;
-  --divider: #f0f0f0;
-  --step-inactive-bg: #ffffff;
-  --step-inactive-border: #cccccc;
-  --pending-bg: #fbf5e1;
-  --timeline-divider: #eaeaea;
-  --secondary-btn: #ffffff;
-  --secondary-btn-border: #dcdad5;
-  --secondary-btn-text: #4a4743;
-  --ref-text-color: #4a4743;
-  --breadcrumb-sub: #888888;
+  background-color: var(--page-bg, #faf9f6);
 }
 
 /* ---- Sidebar ---- */
