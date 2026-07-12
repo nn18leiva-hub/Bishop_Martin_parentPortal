@@ -325,7 +325,11 @@ const StaffDashboard = () => {
           <p className="serif-number" style={{ fontSize: '2.3rem', margin: 0 }}>
             {totalProcessedCount}
           </p>
-            {/* ── Parents Verification Section (Only on Approval Queue Page) ── */}
+        </div>
+
+      </div>
+
+      {/* ── Parents Verification Section (Only on Approval Queue Page) ── */}
       {isApprovalPage && (
         <div style={{ marginBottom: '2.5rem' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: dk ? '#ffb4c4' : '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
