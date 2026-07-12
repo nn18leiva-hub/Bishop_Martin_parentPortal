@@ -3,10 +3,31 @@ import { useAuth } from '../contexts/AuthContext';
 import { ShieldCheck, ShieldAlert, UploadCloud, FileText, CheckCircle, Check, Lock, Info, ArrowRight, Folder, Calendar } from 'lucide-react';
 import { apiFetch } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
+import { useSettings } from '../contexts/ThemeLanguageContext';
 
 const Verification = () => {
   const { user, fetchProfile } = useAuth();
   const navigate = useNavigate();
+  const { theme } = useSettings();
+  const dk = theme === 'dark';
+
+  const c = {
+    outerCard:     dk ? '#1a1a1a'  : '#ffffff',
+    outerBorder:   dk ? '#2a2a2a'  : '#eaeaea',
+    subCard:       dk ? '#212121'  : '#fcfbfa',
+    subBorder:     dk ? '#2e2e2e'  : '#e8e6e1',
+    divider:       dk ? '#2e2e2e'  : '#eae5db',
+    dashedDivider: dk ? '#333333'  : '#eae5db',
+    textMain:      dk ? '#e8e8e8'  : '#2c2c2c',
+    textSub:       dk ? '#888888'  : '#555555',
+    textMuted:     dk ? '#666666'  : '#8e8b82',
+    textValue:     dk ? '#dddddd'  : '#2c2c2c',
+    statusLabel:   dk ? '#bbbbbb'  : '#4a4743',
+    verifiedBg:    dk ? 'rgba(16,185,129,0.12)' : '#d1fae5',
+    pendingBg:     dk ? 'rgba(217,119,6,0.12)'  : '#fef3c7',
+    infoBg:        dk ? '#1e1a10'  : '#fcfbfa',
+    needHelpText:  dk ? '#888888'  : '#999999',
+  };
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
@@ -163,14 +184,14 @@ const Verification = () => {
         /* ── STEP 3 / CONFIRMATION / SUCCESS SCREEN ── */
         <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem 0' }}>
           <div className="mock-card" style={{ 
-            background: '#ffffff', 
-            border: '1px solid #eaeaea', 
+            background: c.outerCard, 
+            border: `1px solid ${c.outerBorder}`, 
             borderTop: '4px solid #7a0c2e', 
             borderRadius: '14px', 
             padding: '3rem 2.5rem', 
             width: '100%', 
             maxWidth: '560px', 
-            boxShadow: '0 15px 45px rgba(0,0,0,0.03)',
+            boxShadow: dk ? '0 15px 45px rgba(0,0,0,0.3)' : '0 15px 45px rgba(0,0,0,0.03)',
             textAlign: 'center'
           }}>
             {/* Green Check Icon */}
@@ -189,10 +210,10 @@ const Verification = () => {
               <Check size={28} strokeWidth={3} />
             </div>
 
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#2c2c2c', margin: '0 0 0.5rem 0', fontFamily: "Georgia, serif" }}>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: c.textMain, margin: '0 0 0.5rem 0', fontFamily: "Georgia, serif" }}>
               {isVerified ? 'Verification Approved' : 'Verification Submitted'}
             </h3>
-            <p style={{ color: '#555555', fontSize: '0.88rem', lineHeight: 1.5, margin: '0 auto 2rem auto', maxWidth: '440px' }}>
+            <p style={{ color: c.textSub, fontSize: '0.88rem', lineHeight: 1.5, margin: '0 auto 2rem auto', maxWidth: '440px' }}>
               {isVerified 
                 ? 'Your legal parent/guardian identity has been successfully verified by the administration office.'
                 : 'Your Social Security Card has been securely uploaded and is now pending review by the administration office.'
@@ -201,8 +222,8 @@ const Verification = () => {
 
             {/* Submission Details Box */}
             <div style={{ 
-              background: '#fcfbfa', 
-              border: '1px solid #e8e6e1', 
+              background: c.subCard, 
+              border: `1px solid ${c.subBorder}`, 
               borderRadius: '8px', 
               padding: '1.25rem', 
               textAlign: 'left',
@@ -211,9 +232,9 @@ const Verification = () => {
               <div style={{ 
                 fontSize: '0.7rem', 
                 fontWeight: 800, 
-                color: '#8e8b82', 
+                color: c.textMuted, 
                 letterSpacing: '0.08em', 
-                borderBottom: '1px solid #eae5db', 
+                borderBottom: `1px solid ${c.divider}`, 
                 paddingBottom: '8px', 
                 marginBottom: '12px' 
               }}>
@@ -224,23 +245,23 @@ const Verification = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <FileText size={16} color="#7a0c2e" />
                   <div>
-                    <span style={{ fontSize: '0.7rem', color: '#8e8b82', display: 'block' }}>Document Type</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>Social Security Card</span>
+                    <span style={{ fontSize: '0.7rem', color: c.textMuted, display: 'block' }}>Document Type</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: c.textValue }}>Social Security Card</span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Calendar size={16} color="#7a0c2e" />
                   <div>
-                    <span style={{ fontSize: '0.7rem', color: '#8e8b82', display: 'block' }}>Date Submitted</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>
+                    <span style={{ fontSize: '0.7rem', color: c.textMuted, display: 'block' }}>Date Submitted</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: c.textValue }}>
                       {new Date(user.updated_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px dashed #eae5db', paddingTop: '10px', marginTop: '4px' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4a4743' }}>Status</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px dashed ${c.dashedDivider}`, paddingTop: '10px', marginTop: '4px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: c.statusLabel }}>Status</span>
                   {isVerified ? (
                     <span style={{
                       display: 'inline-block',
@@ -248,7 +269,7 @@ const Verification = () => {
                       borderRadius: '20px',
                       fontSize: '0.7rem',
                       fontWeight: 700,
-                      background: '#d1fae5',
+                      background: c.verifiedBg,
                       color: '#10b981'
                     }}>
                       • Verified
@@ -260,7 +281,7 @@ const Verification = () => {
                       borderRadius: '20px',
                       fontSize: '0.7rem',
                       fontWeight: 700,
-                      background: '#fef3c7',
+                      background: c.pendingBg,
                       color: '#d97706'
                     }}>
                       • Pending Review
@@ -272,8 +293,9 @@ const Verification = () => {
 
             {/* What Happens Next Box */}
             <div style={{ 
-              background: '#fcfbfa', 
+              background: c.infoBg, 
               borderRadius: '8px', 
+              border: `1px solid ${c.subBorder}`,
               padding: '1.25rem', 
               textAlign: 'left',
               display: 'flex',
@@ -296,8 +318,8 @@ const Verification = () => {
                 <Info size={11} color="#cca43b" strokeWidth={3} />
               </div>
               <div>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#4a4743', margin: '0 0 4px 0' }}>What happens next?</h4>
-                <p style={{ fontSize: '0.78rem', color: '#666666', margin: 0, lineHeight: 1.4 }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: c.textValue, margin: '0 0 4px 0' }}>What happens next?</h4>
+                <p style={{ fontSize: '0.78rem', color: c.textSub, margin: 0, lineHeight: 1.4 }}>
                   {isVerified 
                     ? 'Your account profile is active. You can now download generated documents or proceed with other requests.'
                     : 'Our team will verify the document within 1-2 business days. You will receive an email notification once your identity verification is complete.'
