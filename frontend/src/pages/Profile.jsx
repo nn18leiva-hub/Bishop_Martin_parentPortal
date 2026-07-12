@@ -13,43 +13,15 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [isApproved, setIsApproved] = useState(false);
 
   // States for Avatar Upload
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const [avatarSuccess, setAvatarSuccess] = useState('');
 
-  // Polling for admin approval status
-  useEffect(() => {
-    if (stage !== 'awaiting_code' || !user?.email) return;
-
-    let active = true;
-    const checkApproval = async () => {
-      try {
-        const res = await apiFetch(`/auth/reset-status?email=${encodeURIComponent(user.email)}`);
-        if (active && res.approved) {
-          setIsApproved(true);
-          setMessage('Your password reset request has been approved by the Administrator! Click Confirm to finalize.');
-        }
-      } catch (err) {
-        console.error('Failed checking reset status:', err);
-      }
-    };
-
-    checkApproval();
-    const interval = setInterval(checkApproval, 4000);
-
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [stage, user?.email]);
-
   const handleRequestCode = async () => {
     setError('');
     setMessage('');
-    setIsApproved(false);
     setStage('requesting');
     try {
       const res = await apiFetch('/auth/request-profile-code', { method: 'POST' });
@@ -64,20 +36,19 @@ const Profile = () => {
   const handleVerifyAndChange = async (e) => {
     e.preventDefault();
     if (newPassword.length < 6) return setError('New password must be at least 6 characters.');
-    if (!code && !isApproved) return setError('Verification code is required unless approved by an Administrator.');
+    if (!code) return setError('Verification code is required.');
 
     setError('');
     setStage('verifying');
     try {
       const res = await apiFetch('/auth/change-profile-password', {
         method: 'POST',
-        body: JSON.stringify({ code: code || '', newPassword })
+        body: JSON.stringify({ code, newPassword })
       });
       setMessage(res.message || 'Password updated successfully!');
       setStage('success');
       setCode('');
       setNewPassword('');
-      setIsApproved(false);
     } catch (err) {
       setError(err.message || 'Failed to change password. Code may be invalid or expired.');
       setStage('awaiting_code');
@@ -276,11 +247,6 @@ const Profile = () => {
  
             {(stage === 'awaiting_code' || stage === 'verifying') && (
                 <form onSubmit={handleVerifyAndChange} className="animate-up" style={{ padding: '1.25rem', background: '#faf9f6', borderRadius: '12px', border: '1px solid #eaeaea' }}>
-                    {isApproved ? (
-                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '12px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <CheckCircle size={16} /> Approved by Administrator
-                        </div>
-                    ) : (
                         <div className="form-group mb-4" style={{ marginBottom: '1rem' }}>
                             <label style={{ color: '#d97706', display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>6-Digit Verification Pin</label>
                             <input 
@@ -293,7 +259,6 @@ const Profile = () => {
                                 style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
                             />
                         </div>
-                    )}
                     <div className="form-group mb-6" style={{ marginBottom: '1.25rem' }}>
                         <label style={{ color: '#d97706', display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>New Secure Password</label>
                         <input 

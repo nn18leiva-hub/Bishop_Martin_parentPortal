@@ -16,37 +16,10 @@ const ForgotPassword = () => {
 
   const navigate = useNavigate();
 
-  // Polling for admin approval status
-  useEffect(() => {
-    if (stage !== 'awaiting_code' || !email) return;
-
-    let active = true;
-    const checkApproval = async () => {
-      try {
-        const res = await apiFetch(`/auth/reset-status?email=${encodeURIComponent(email)}`);
-        if (active && res.approved) {
-          setIsApproved(true);
-          setMessage('Your password reset request has been approved by the Administrator! Fill in your new password and click Confirm.');
-        }
-      } catch (err) {
-        console.error('Failed checking reset status:', err);
-      }
-    };
-
-    checkApproval();
-    const interval = setInterval(checkApproval, 4000);
-
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [stage, email]);
-
   const handleRequestReset = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    setIsApproved(false);
     setLoading(true);
 
     try {
@@ -67,7 +40,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     if (newPassword !== confirmPassword) return setError('Passwords do not match.');
     if (newPassword.length < 6) return setError('Password must be at least 6 characters.');
-    if (!code && !isApproved) return setError('Verification PIN code is required unless approved by an Administrator.');
+    if (!code) return setError('Verification PIN code is required.');
 
     setError('');
     setLoading(true);
@@ -75,14 +48,13 @@ const ForgotPassword = () => {
     try {
       const data = await apiFetch('/auth/reset-password', {
         method: 'POST',
-        body: JSON.stringify({ token: code || '', newPassword, email })
+        body: JSON.stringify({ token: code, newPassword })
       });
       setMessage(data.message || 'Password has been successfully reset.');
       setStage('success');
       setCode('');
       setNewPassword('');
       setConfirmPassword('');
-      setIsApproved(false);
       setTimeout(() => navigate('/login'), 4000);
     } catch (err) {
       setError(err.message || 'Failed to reset password. Code may be invalid or expired.');
@@ -128,24 +100,18 @@ const ForgotPassword = () => {
 
         {stage === 'awaiting_code' && (
           <form onSubmit={handleResetPassword}>
-             {isApproved ? (
-               <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '12px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <CheckCircle size={16} /> Approved by Administrator
-               </div>
-             ) : (
-               <div className="form-group mb-3">
-                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>6-Digit Verification PIN</label>
-                 <input 
-                   type="text" 
-                   className="form-input" 
-                   placeholder="e.g. 123456" 
-                   value={code} 
-                   onChange={e => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                   required 
-                   style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
-                 />
-               </div>
-             )}
+             <div className="form-group mb-3">
+               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>6-Digit Verification PIN</label>
+               <input 
+                 type="text" 
+                 className="form-input" 
+                 placeholder="e.g. 123456" 
+                 value={code} 
+                 onChange={e => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                 required 
+                 style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
+               />
+             </div>
 
             <div className="form-group mb-3">
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>New Password</label>

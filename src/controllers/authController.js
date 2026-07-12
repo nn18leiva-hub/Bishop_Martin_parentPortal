@@ -139,7 +139,7 @@ const forgotPassword = async (req, res) => {
             console.error('Email dispatch failed or was bypassed:', emailErr);
         }
 
-        res.json({ message: 'If that email exists in our system, a password reset request has been initialized. Please ask the Administrator to approve it.' });
+        res.json({ message: 'If that email exists in our system, a 6-digit verification PIN has been sent to your inbox.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error processing password reset request.' });
@@ -148,22 +148,22 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     try {
-        const { token, newPassword, email } = req.body;
-        if ((!token && !email) || !newPassword) {
-            return res.status(400).json({ message: 'Token/email and new password required.' });
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ message: 'Verification PIN token and new password required.' });
         }
 
-        // Retrieve valid token or approved reset
+        // Retrieve valid token
         const tokenRes = await db.query(
             `SELECT email FROM password_resets 
-             WHERE (token = $1 OR (email = $2 AND approved = true)) 
+             WHERE token = $1 
                AND expires_at > NOW() 
              ORDER BY created_at DESC LIMIT 1`,
-            [token || '', email || '']
+            [token]
         );
 
         if (tokenRes.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid, expired, or unapproved password reset request.' });
+            return res.status(400).json({ message: 'Invalid or expired verification PIN.' });
         }
 
         const targetEmail = tokenRes.rows[0].email;
@@ -224,18 +224,18 @@ const changeProfilePassword = async (req, res) => {
         if (!email) return res.status(400).json({ message: 'Unauthorized request.' });
         if (!newPassword) return res.status(400).json({ message: 'New password required.' });
 
-        // Retrieve valid token or approved reset
+        // Retrieve valid token
         const tokenRes = await db.query(
             `SELECT email FROM password_resets 
              WHERE email = $1 
-               AND (token = $2 OR approved = true) 
+               AND token = $2 
                AND expires_at > NOW() 
              ORDER BY created_at DESC LIMIT 1`,
             [email, code || '']
         );
 
         if (tokenRes.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid, expired, or unapproved verification request.' });
+            return res.status(400).json({ message: 'Invalid or expired verification PIN.' });
         }
 
         const password_hash = await bcrypt.hash(newPassword, 10);
