@@ -13,7 +13,7 @@ const HeaderActions = () => {
   const [parentRequests, setParentRequests] = useState([]);
   const [staffPendingParents, setStaffPendingParents] = useState([]);
   const [staffPendingRequests, setStaffPendingRequests] = useState([]);
-  const [staffPendingResets, setStaffPendingResets] = useState([]);
+
   const [readNotificationIds, setReadNotificationIds] = useState([]);
 
   useEffect(() => {
@@ -45,11 +45,7 @@ const HeaderActions = () => {
           })
           .catch(err => console.error('Failed to load requests for notifications:', err));
 
-        apiFetch('/staff/password-resets')
-          .then(data => {
-            setStaffPendingResets(Array.isArray(data) ? data : []);
-          })
-          .catch(err => console.error('Failed to load password resets for notifications:', err));
+
       };
 
       loadStaffData();
@@ -88,17 +84,7 @@ const HeaderActions = () => {
         }
       });
 
-      // 3. Pending Password Reset approvals
-      staffPendingResets.forEach(reset => {
-        if (!reset.approved) {
-          list.push({
-            id: `staff-reset-app-${reset.id}`,
-            text: `Password Reset Approval Requested by ${reset.email} (PIN: ${reset.token})`,
-            read: false,
-            time: "Awaiting Action"
-          });
-        }
-      });
+
 
       return list.map(n => ({
         ...n,
@@ -174,7 +160,7 @@ const HeaderActions = () => {
       ...n,
       read: readNotificationIds.includes(n.id) ? true : n.read
     }));
-  }, [user, parentRequests, staffPendingParents, staffPendingRequests, staffPendingResets, readNotificationIds]);
+  }, [user, parentRequests, staffPendingParents, staffPendingRequests, readNotificationIds]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

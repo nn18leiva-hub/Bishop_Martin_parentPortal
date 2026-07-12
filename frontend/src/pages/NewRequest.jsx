@@ -196,23 +196,32 @@ const NewRequest = () => {
   const selectedType = DOCUMENT_TYPES.find(d => d.id === parseInt(formData.document_type_id)) || DOCUMENT_TYPES[0];
   const isCustomRequest = selectedType.name === 'custom_request';
 
-  // Fee calculation matching screenshots exactly:
-  // - Step 3 digital copy base is $10.00, processing fee is $1.50, total is $11.50.
-  // - Step 4 physical mail transcript is $15.00 base, expedited is $25.00, secure mail shipping is $45.00, total is $85.00.
+  // Real school prices:
+  // - Transcript: $15 regular, $25 express (+$10 speed fee)
+  // - Letter of Standing: $10 regular, $20 express (+$10 speed fee)
   const getFees = () => {
-    const isTranscript = selectedType.name === 'transcript';
-    const isDiploma = selectedType.name === 'duplicate_diploma';
-    
-    let base = selectedType.requires_payment ? (isDiploma ? 35 : (formData.delivery_method === 'mailed' ? 15 : 10)) : 0;
-    let shipping = formData.delivery_method === 'mailed' ? (isTranscript ? 45 : 15) : 0;
-    let speed = formData.delivery_speed === 'priority' ? 25 : 0;
-    let processingFee = (formData.delivery_method !== 'mailed' && selectedType.requires_payment) ? 1.50 : 0;
-
-    let total = base + shipping + speed + processingFee;
     if (selectedType.name === 'custom_request') {
       return { base: 'TBD', shipping: 0, speed: 0, processingFee: 0, total: 'TBD' };
     }
 
+    const isTranscript = selectedType.name === 'transcript';
+    const isLetterOfStanding = selectedType.name === 'letter_of_standing' || selectedType.name === 'good_standing';
+    const isDiploma = selectedType.name === 'duplicate_diploma';
+
+    let base = 0;
+    if (selectedType.requires_payment) {
+      if (isTranscript) base = 15;
+      else if (isLetterOfStanding) base = 10;
+      else if (isDiploma) base = 35;
+      else base = 15;
+    }
+
+    // Express/priority adds $10 on top
+    let speed = formData.delivery_speed === 'priority' ? 10 : 0;
+    let shipping = formData.delivery_method === 'mailed' ? 5 : 0;
+    let processingFee = 0;
+
+    let total = base + shipping + speed + processingFee;
     return { base, shipping, speed, processingFee, total };
   };
 

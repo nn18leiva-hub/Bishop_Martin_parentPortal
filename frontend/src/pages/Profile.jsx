@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { KeyRound, Mail, ShieldCheck, User, Camera } from 'lucide-react';
+import { KeyRound, Mail, ShieldCheck, User, Camera, Upload } from 'lucide-react';
 import { apiFetch } from '../services/api';
 
 const Profile = () => {
