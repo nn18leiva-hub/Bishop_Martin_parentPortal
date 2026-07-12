@@ -22,6 +22,7 @@ const BankDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploadingReceipt, setUploadingReceipt] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const loadData = async () => {
     try {
@@ -70,10 +71,18 @@ const BankDetails = () => {
     alert(`Copied: "${text}" to clipboard.`);
   };
 
+  const handlePrev = () => {
+    setCurrentIndex(prev => (prev === 0 ? requests.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex(prev => (prev === requests.length - 1 ? 0 : prev + 1));
+  };
+
   if (loading) return <div style={{ background: '#faf9f6', minHeight: '100vh', padding: '2rem', fontFamily: "'Inter', sans-serif" }}>Loading payment details...</div>;
 
   // Use dynamic request data if available in the database, otherwise default to the exact mockup data
-  const activeRequest = requests.length > 0 ? requests[0] : null;
+  const activeRequest = requests.length > 0 ? requests[currentIndex] : null;
   const requestId = activeRequest ? activeRequest.request_id : 9128;
   const studentName = activeRequest ? activeRequest.student_full_name : 'Leo Wilson';
   const gradeLevel = activeRequest ? activeRequest.student_graduation_year_or_years_attended : 'Grade 11-B';
@@ -82,6 +91,22 @@ const BankDetails = () => {
     ? new Date(activeRequest.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : 'Sep 01, 2024';
 
+  const getRequestFee = (req) => {
+    if (!req) return '$70.00';
+    try {
+      const data = typeof req.form_data === 'string' ? JSON.parse(req.form_data) : req.form_data;
+      if (data && data.total_fee !== undefined) {
+        return typeof data.total_fee === 'number' 
+          ? `$${data.total_fee.toFixed(2)}` 
+          : `$${data.total_fee}`;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return '$70.00';
+  };
+
+  const documentFee = getRequestFee(activeRequest);
   const docRef = `TU-2024-${String(requestId).padStart(4, '0')}`;
   const transferRef = `DOC-REQ-2024-${studentName.split(' ').pop().toUpperCase()}`;
 
@@ -271,6 +296,53 @@ const BankDetails = () => {
                 Request Summary
               </h3>
 
+              {requests.length > 1 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: '#ffffff',
+                  border: '1px solid #e0deda',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  marginBottom: '1.25rem',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  boxSizing: 'border-box'
+                }}>
+                  <button 
+                    onClick={handlePrev}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#7a0c2e',
+                      cursor: 'pointer',
+                      fontWeight: 800,
+                      padding: '4px 8px',
+                      fontSize: '0.95rem'
+                    }}
+                  >
+                    &larr;
+                  </button>
+                  <span style={{ color: '#4a4743' }}>Request {currentIndex + 1} of {requests.length}</span>
+                  <button 
+                    onClick={handleNext}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#7a0c2e',
+                      cursor: 'pointer',
+                      fontWeight: 800,
+                      padding: '4px 8px',
+                      fontSize: '0.95rem'
+                    }}
+                  >
+                    &rarr;
+                  </button>
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#666663' }}>Reference</span>
@@ -297,7 +369,7 @@ const BankDetails = () => {
                     <span style={{ display: 'block', fontSize: '0.68rem', color: '#888885', marginTop: '2px' }}>Processing and administrative fees included</span>
                   </div>
                   <span style={{ color: '#7a0c2e', fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
-                    $70.00
+                    {documentFee}
                   </span>
                 </div>
 
