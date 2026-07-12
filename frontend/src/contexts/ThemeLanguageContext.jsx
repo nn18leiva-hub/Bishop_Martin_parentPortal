@@ -104,7 +104,22 @@ const translations = {
     transcript: "Official Transcript",
     enrollment_verification: "Enrollment Verification",
     disciplinary_record: "Disciplinary Record",
-    custom_request: "Custom Request"
+    custom_request: "Custom Request",
+    // Notifications panel
+    notifications: "Notifications",
+    mark_all_read: "Mark all read",
+    no_new_notifications: "No new notifications",
+    notif_identity_approved: "Identity verification approved! Welcome to the Bishop Martin Parent Portal, {name}.",
+    notif_identity_pending: "Identity verification scan submitted. Administrative review is pending.",
+    notif_identity_required: "Action Required: Please upload your ID scan to verify your identity.",
+    notif_ready_for_pickup: "Your {doc} request for {student} is ready for pickup!",
+    notif_denied: "Your {doc} request for {student} was denied. Please contact administration.",
+    notif_under_verification: "Your {doc} request for {student} is currently under administrative verification.",
+    notif_upload_receipt: "Action Required: Please upload your bank payment receipt for the {doc} request.",
+    time_just_now: "Just now",
+    time_recently: "Recently",
+    time_10m_ago: "10m ago",
+    time_1h_ago: "1h ago"
   },
   es: {
     dashboard: "Tablero",
@@ -207,7 +222,22 @@ const translations = {
     transcript: "Transcripción Oficial",
     enrollment_verification: "Verificación de Matrícula",
     disciplinary_record: "Expediente Disciplinario",
-    custom_request: "Solicitud Personalizada"
+    custom_request: "Solicitud Personalizada",
+    // Notifications panel
+    notifications: "Notificaciones",
+    mark_all_read: "Marcar todo como leído",
+    no_new_notifications: "Sin nuevas notificaciones",
+    notif_identity_approved: "¡Verificación de identidad aprobada! Bienvenido al Portal de Padres de Bishop Martin, {name}.",
+    notif_identity_pending: "Escaneo de verificación de identidad enviado. Revisión administrativa pendiente.",
+    notif_identity_required: "Acción Requerida: Suba su escaneo de identificación para verificar su identidad.",
+    notif_ready_for_pickup: "¡Su solicitud de {doc} para {student} está lista para recoger!",
+    notif_denied: "Su solicitud de {doc} para {student} fue denegada. Contacte a administración.",
+    notif_under_verification: "Su solicitud de {doc} para {student} está bajo verificación administrativa.",
+    notif_upload_receipt: "Acción Requerida: Suba su recibo de pago bancario para la solicitud de {doc}.",
+    time_just_now: "Ahora mismo",
+    time_recently: "Recientemente",
+    time_10m_ago: "Hace 10 min",
+    time_1h_ago: "Hace 1 hora"
   },
   bz: {
     dashboard: "Dashboard",
@@ -310,7 +340,22 @@ const translations = {
     transcript: "Official Grades",
     enrollment_verification: "Enrollment Check",
     disciplinary_record: "Disciplinary Record",
-    custom_request: "Custom Request"
+    custom_request: "Custom Request",
+    // Notifications panel
+    notifications: "Notifications",
+    mark_all_read: "Mark all read",
+    no_new_notifications: "No new notifications",
+    notif_identity_approved: "Identity check done! Welcome to di Bishop Martin Parent Portal, {name}.",
+    notif_identity_pending: "Yuh ID scan submitted. Dem deh review it.",
+    notif_identity_required: "Action Needed: Upload yuh ID scan fi verify yuh identity.",
+    notif_ready_for_pickup: "Yuh {doc} request fi {student} ready fi pickup!",
+    notif_denied: "Yuh {doc} request fi {student} denied. Contact administration.",
+    notif_under_verification: "Yuh {doc} request fi {student} deh inna verification.",
+    notif_upload_receipt: "Action Needed: Upload yuh bank receipt fi di {doc} request.",
+    time_just_now: "Just now",
+    time_recently: "Recently",
+    time_10m_ago: "10m ago",
+    time_1h_ago: "1h ago"
   },
   fr: {
     dashboard: "Tableau de Bord",
@@ -413,7 +458,22 @@ const translations = {
     transcript: "Relevé de Notes Officiel",
     enrollment_verification: "Vérification d'Inscription",
     disciplinary_record: "Dossier Disciplinaire",
-    custom_request: "Demande Personnalisée"
+    custom_request: "Demande Personnalisée",
+    // Notifications panel
+    notifications: "Notifications",
+    mark_all_read: "Tout marquer comme lu",
+    no_new_notifications: "Aucune nouvelle notification",
+    notif_identity_approved: "Vérification d'identité approuvée ! Bienvenue sur le Portail Parents de Bishop Martin, {name}.",
+    notif_identity_pending: "Scan de vérification d'identité soumis. Révision administrative en cours.",
+    notif_identity_required: "Action Requise : Veuillez télécharger votre scan d'identité pour vérifier votre identité.",
+    notif_ready_for_pickup: "Votre demande de {doc} pour {student} est prête à être récupérée !",
+    notif_denied: "Votre demande de {doc} pour {student} a été refusée. Veuillez contacter l'administration.",
+    notif_under_verification: "Votre demande de {doc} pour {student} est en cours de vérification administrative.",
+    notif_upload_receipt: "Action Requise : Veuillez télécharger votre reçu de paiement bancaire pour la demande de {doc}.",
+    time_just_now: "À l'instant",
+    time_recently: "Récemment",
+    time_10m_ago: "Il y a 10 min",
+    time_1h_ago: "Il y a 1 heure"
   }
 };
 

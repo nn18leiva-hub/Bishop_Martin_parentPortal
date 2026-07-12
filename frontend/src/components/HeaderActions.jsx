@@ -100,58 +100,58 @@ const HeaderActions = () => {
     if (user.verified) {
       list.push({
         id: `parent-ver-${idCounter++}`,
-        text: `Identity verification approved! Welcome to the Bishop Martin Parent Portal, ${user.full_name}.`,
+        text: t('notif_identity_approved').replace('{name}', user.full_name),
         read: false,
-        time: "Just now"
+        time: t('time_just_now')
       });
     } else if (user.ssn_card_image_path) {
       list.push({
         id: `parent-ver-${idCounter++}`,
-        text: "Identity verification scan submitted. Administrative review is pending.",
+        text: t('notif_identity_pending'),
         read: false,
-        time: "10m ago"
+        time: t('time_10m_ago')
       });
     } else {
       list.push({
         id: `parent-ver-${idCounter++}`,
-        text: "Action Required: Please upload your ID scan to verify your identity.",
+        text: t('notif_identity_required'),
         read: false,
-        time: "1h ago"
+        time: t('time_1h_ago')
       });
     }
 
     // 2. Document Request Status Notifications
     parentRequests.forEach(req => {
-      const docName = (req.document_type_name || '').replace(/_/g, ' ').toUpperCase();
+      const docName = t(req.document_type_name) || (req.document_type_name || '').replace(/_/g, ' ').toUpperCase();
       const studentName = req.student_full_name;
 
       if (req.status === 'ready_for_pickup') {
         list.push({
           id: `parent-req-${req.request_id}`,
-          text: `Your ${docName} request for ${studentName} is ready for pickup!`,
+          text: t('notif_ready_for_pickup').replace('{doc}', docName).replace('{student}', studentName),
           read: false,
-          time: "Recently"
+          time: t('time_recently')
         });
       } else if (req.status === 'denied') {
         list.push({
           id: `parent-req-${req.request_id}`,
-          text: `Your ${docName} request for ${studentName} was denied. Please contact administration.`,
+          text: t('notif_denied').replace('{doc}', docName).replace('{student}', studentName),
           read: false,
-          time: "Recently"
+          time: t('time_recently')
         });
       } else if (req.status === 'pending_verification') {
         list.push({
           id: `parent-req-${req.request_id}`,
-          text: `Your ${docName} request for ${studentName} is currently under administrative verification.`,
+          text: t('notif_under_verification').replace('{doc}', docName).replace('{student}', studentName),
           read: true,
-          time: "1h ago"
+          time: t('time_1h_ago')
         });
       } else if (req.status === 'pending' && req.requires_payment && !req.payment_verified && !req.receipt_image_path) {
         list.push({
           id: `parent-req-${req.request_id}`,
-          text: `Action Required: Please upload your bank payment receipt for the ${docName} request.`,
+          text: t('notif_upload_receipt').replace('{doc}', docName),
           read: false,
-          time: "Recently"
+          time: t('time_recently')
         });
       }
     });
@@ -239,20 +239,20 @@ const HeaderActions = () => {
             textAlign: 'left'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 1rem 0.75rem 1rem', borderBottom: '1px solid #eaeaea' }}>
-              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-color, #2c2c2c)' }}>Notifications</span>
+              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-color, #2c2c2c)' }}>{t('notifications')}</span>
               {unreadCount > 0 && (
                 <button 
                   onClick={markAllRead}
                   style={{ background: 'none', border: 'none', color: '#7a0c2e', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                 >
-                  Mark all read
+                  {t('mark_all_read')}
                 </button>
               )}
             </div>
             <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
               {notifications.filter(n => !n.read).length === 0 ? (
                 <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: '#888888', fontSize: '0.8rem' }}>
-                  No new notifications
+                  {t('no_new_notifications')}
                 </div>
               ) : (
                 notifications.filter(n => !n.read).map(n => (
