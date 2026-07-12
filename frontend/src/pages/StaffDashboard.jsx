@@ -12,7 +12,7 @@ const StaffDashboard = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [pendingParents, setPendingParents] = useState([]);
-  const [pendingResets, setPendingResets] = useState([]);
+
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,39 +42,7 @@ const StaffDashboard = () => {
     }
   };
 
-  const loadPendingResets = async () => {
-    try {
-      const data = await apiFetch('/staff/password-resets');
-      setPendingResets(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Failed to load pending resets:', err);
-    }
-  };
 
-  const handleApproveReset = async (email) => {
-    try {
-      await apiFetch('/staff/approve-password-reset', {
-        method: 'POST',
-        body: JSON.stringify({ email })
-      });
-      loadPendingResets();
-    } catch (err) {
-      alert('Failed to approve password reset: ' + err.message);
-    }
-  };
-
-  const handleDeleteReset = async (id) => {
-    if (window.confirm("Are you sure you want to delete this password reset request?")) {
-      try {
-        await apiFetch(`/staff/password-reset/${id}`, {
-          method: 'DELETE'
-        });
-        loadPendingResets();
-      } catch (err) {
-        alert('Failed to delete password reset request: ' + err.message);
-      }
-    }
-  };
 
   const handleDeleteRequest = async (id) => {
     if (window.confirm("Are you sure you want to delete this document request?")) {
@@ -91,23 +59,18 @@ const StaffDashboard = () => {
 
   useEffect(() => {
     if (user && user.type === 'staff') {
-       loadRequests();
-       loadPendingParents();
-       loadPendingResets();
-       const interval = setInterval(() => {
-          apiFetch('/staff/requests').then(data => {
-            setRequests(Array.isArray(data) ? data : []);
-          }).catch(err => console.error(err));
+      loadRequests();
+      loadPendingParents();
+      const interval = setInterval(() => {
+        apiFetch('/staff/requests').then(data => {
+          setRequests(Array.isArray(data) ? data : []);
+        }).catch(err => console.error(err));
 
-          apiFetch('/staff/pending-parents').then(data => {
-            setPendingParents(Array.isArray(data) ? data : []);
-          }).catch(err => console.error(err));
-
-          apiFetch('/staff/password-resets').then(data => {
-            setPendingResets(Array.isArray(data) ? data : []);
-          }).catch(err => console.error(err));
-       }, 15000); 
-       return () => clearInterval(interval);
+        apiFetch('/staff/pending-parents').then(data => {
+          setPendingParents(Array.isArray(data) ? data : []);
+        }).catch(err => console.error(err));
+      }, 15000);
+      return () => clearInterval(interval);
     }
   }, [user]);
 

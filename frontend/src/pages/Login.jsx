@@ -106,9 +106,6 @@ const Login = () => {
             <div className="login-form-group">
               <div className="login-split-password-header">
                 <label className="login-label" htmlFor="password-input">Password</label>
-                <Link to="/forgot-password" className="login-split-forgot-link">
-                  Forgot password?
-                </Link>
               </div>
               <div className="login-input-wrapper">
                 <Lock size={18} className="login-input-icon" />
