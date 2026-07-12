@@ -103,34 +103,18 @@ const getStatusBadge = (status, typeName = '', t) => {
         <span className="db-badge db-badge-action" style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '6px',
           padding: '0.35rem 0.85rem',
           borderRadius: '20px',
           background: '#fdecea',
-          border: '1px solid #ffcdd2',
           color: '#c62828',
-          fontSize: '0.7rem',
+          border: '1px solid #ffcdd2',
+          fontSize: '0.75rem',
           fontWeight: 'bold',
-          letterSpacing: '0.04em',
-          lineHeight: '1.1'
+          letterSpacing: '0.04em'
         }}>
-          <span style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '14px',
-            height: '14px',
-            borderRadius: '50%',
-            backgroundColor: '#c62828',
-            color: '#ffffff',
-            fontWeight: 'bold',
-            fontSize: '0.65rem',
-            lineHeight: '1'
-          }}>!</span>
-          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-            <span>{t('action')}</span>
-            <span style={{ fontSize: '0.6rem' }}>{t('required')}</span>
-          </div>
+          <span style={{ fontSize: '1.1rem', color: '#c62828', lineHeight: '0.8', marginRight: '2px' }}>•</span>
+          {t('action')} {t('required')}
         </span>
       );
     default:
