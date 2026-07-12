@@ -219,39 +219,40 @@ const requestProfileCode = async (req, res) => {
 const changeProfilePassword = async (req, res) => {
     try {
         const { email } = req.user;
-        const { code, newPassword } = req.body;
-        
+        const { currentPassword, newPassword } = req.body;
+
         if (!email) return res.status(400).json({ message: 'Unauthorized request.' });
-        if (!newPassword) return res.status(400).json({ message: 'New password required.' });
+        if (!currentPassword) return res.status(400).json({ message: 'Current password is required.' });
+        if (!newPassword) return res.status(400).json({ message: 'New password is required.' });
+        if (newPassword.length < 6) return res.status(400).json({ message: 'New password must be at least 6 characters.' });
 
-        // Retrieve valid token
-        const tokenRes = await db.query(
-            `SELECT email FROM password_resets 
-             WHERE email = $1 
-               AND token = $2 
-               AND expires_at > NOW() 
-             ORDER BY created_at DESC LIMIT 1`,
-            [email, code || '']
-        );
+        // Find user in parents or staff
+        let userRow = null;
+        let table = null;
 
-        if (tokenRes.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid or expired verification PIN.' });
+        const parentRes = await db.query('SELECT password_hash FROM parents WHERE email = $1', [email]);
+        if (parentRes.rows.length > 0) {
+            userRow = parentRes.rows[0];
+            table = 'parents';
+        } else {
+            const staffRes = await db.query('SELECT password_hash FROM staff WHERE email = $1', [email]);
+            if (staffRes.rows.length > 0) {
+                userRow = staffRes.rows[0];
+                table = 'staff';
+            }
         }
 
+        if (!userRow) return res.status(404).json({ message: 'User account not found.' });
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, userRow.password_hash);
+        if (!isMatch) return res.status(401).json({ message: 'Current password is incorrect.' });
+
+        // Hash and save new password
         const password_hash = await bcrypt.hash(newPassword, 10);
+        await db.query(`UPDATE ${table} SET password_hash = $1 WHERE email = $2`, [password_hash, email]);
 
-        // Try parent first
-        const parentUpdate = await db.query('UPDATE parents SET password_hash = $1 WHERE email = $2 RETURNING parent_id', [password_hash, email]);
-        
-        if (parentUpdate.rows.length === 0) {
-            // Then staff
-            await db.query('UPDATE staff SET password_hash = $1 WHERE email = $2', [password_hash, email]);
-        }
-
-        // Consume all tokens for this email
-        await db.query('DELETE FROM password_resets WHERE email = $1', [email]);
-
-        res.json({ message: 'Your password has been successfully updated.' });
+        res.json({ message: 'Password updated successfully.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error attempting to change password.' });

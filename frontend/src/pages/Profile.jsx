@@ -1,57 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { KeyRound, Mail, ShieldCheck, User, Camera, Upload, CheckCircle } from 'lucide-react';
+import { KeyRound, Mail, ShieldCheck, User, Camera } from 'lucide-react';
 import { apiFetch } from '../services/api';
 
 const Profile = () => {
   const { user, fetchProfile } = useAuth();
-  
-  // States: 'idle', 'requesting', 'awaiting_code', 'verifying', 'success'
-  const [stage, setStage] = useState('idle');
-  
-  const [code, setCode] = useState('');
+
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwMessage, setPwMessage] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
 
   // States for Avatar Upload
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const [avatarSuccess, setAvatarSuccess] = useState('');
 
-  const handleRequestCode = async () => {
-    setError('');
-    setMessage('');
-    setStage('requesting');
-    try {
-      const res = await apiFetch('/auth/request-profile-code', { method: 'POST' });
-      setMessage(res.message || 'Verification code dispatched.');
-      setStage('awaiting_code');
-    } catch (err) {
-      setError(err.message || 'Failed to request code.');
-      setStage('idle');
-    }
-  };
-
-  const handleVerifyAndChange = async (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (newPassword.length < 6) return setError('New password must be at least 6 characters.');
-    if (!code) return setError('Verification code is required.');
+    setPwError('');
+    setPwMessage('');
+    if (newPassword !== confirmPassword) return setPwError('New passwords do not match.');
+    if (newPassword.length < 6) return setPwError('New password must be at least 6 characters.');
 
-    setError('');
-    setStage('verifying');
+    setPwLoading(true);
     try {
       const res = await apiFetch('/auth/change-profile-password', {
         method: 'POST',
-        body: JSON.stringify({ code, newPassword })
+        body: JSON.stringify({ currentPassword, newPassword })
       });
-      setMessage(res.message || 'Password updated successfully!');
-      setStage('success');
-      setCode('');
+      setPwMessage(res.message || 'Password updated successfully!');
+      setCurrentPassword('');
       setNewPassword('');
+      setConfirmPassword('');
     } catch (err) {
-      setError(err.message || 'Failed to change password. Code may be invalid or expired.');
-      setStage('awaiting_code');
+      setPwError(err.message || 'Failed to update password.');
+    } finally {
+      setPwLoading(false);
     }
   };
 
@@ -220,78 +207,59 @@ const Profile = () => {
             </div>
         </div>
  
-        {/* Password Security Block */}
+        {/* Password Change Block */}
         <div className="mock-card" style={{ borderTop: '4px solid #f59e0b', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', alignSelf: 'start' }}>
-            <h3 className="mb-4 flex items-center gap-2" style={{ color: '#d97706', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1rem 0' }}><KeyRound size={20} /> Data Authorization Key</h3>
-            <p style={{ color: '#555555', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                For your security, resetting your portal password requires email verification. We will send a secure 6-digit pin to your registered inbox to authorize this change.
-            </p>
- 
-            {error && <div className="error-text mb-4 p-3" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '8px', fontSize: '0.9rem' }}>{error}</div>}
-            {message && <div className="mb-4 p-3" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '8px', fontSize: '0.9rem' }}>{message}</div>}
- 
-            {stage === 'idle' && (
-                <button 
-                  onClick={handleRequestCode} 
-                  className="btn-primary" 
-                  style={{ background: '#f59e0b', borderColor: '#d97706', color: '#ffffff', fontWeight: 700, width: 'auto', padding: '0.6rem 1.2rem', cursor: 'pointer', border: 'none', borderRadius: '6px' }}>
-                    Request Verification Pin
-                </button>
-            )}
- 
-            {stage === 'requesting' && (
-                <button className="btn-primary" disabled style={{ width: 'auto', background: 'rgba(245, 158, 11, 0.5)', color: '#ffffff', cursor: 'wait', padding: '0.6rem 1.2rem', border: 'none', borderRadius: '6px' }}>
-                    Authenticating Node...
-                </button>
-            )}
- 
-            {(stage === 'awaiting_code' || stage === 'verifying') && (
-                <form onSubmit={handleVerifyAndChange} className="animate-up" style={{ padding: '1.25rem', background: '#faf9f6', borderRadius: '12px', border: '1px solid #eaeaea' }}>
-                        <div className="form-group mb-4" style={{ marginBottom: '1rem' }}>
-                            <label style={{ color: '#d97706', display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>6-Digit Verification Pin</label>
-                            <input 
-                                type="text" 
-                                className="form-input" 
-                                placeholder="e.g. 123456" 
-                                value={code} 
-                                onChange={e => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                                required 
-                                style={{ letterSpacing: '4px', fontSize: '1.25rem', fontFamily: 'monospace', width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
-                            />
-                        </div>
-                    <div className="form-group mb-6" style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ color: '#d97706', display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: 4 }}>New Secure Password</label>
-                        <input 
-                            type="password" 
-                            className="form-input" 
-                            value={newPassword} 
-                            onChange={e => setNewPassword(e.target.value)}
-                            required 
-                            style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px' }}
-                        />
-                    </div>
-                    <button type="submit" className="btn-primary" style={{ background: '#f59e0b', borderColor: '#d97706', color: '#ffffff', fontWeight: 700, width: '100%', padding: '0.6rem', border: 'none', borderRadius: '6px', cursor: 'pointer' }} disabled={stage === 'verifying'}>
-                        {stage === 'verifying' ? 'Validating Hash...' : 'Confirm & Update Password'}
-                    </button>
-                    
-                    <button type="button" onClick={() => setStage('idle')} className="btn-secondary mt-3" style={{ width: '100%', padding: '0.6rem', fontSize: '0.85rem', border: '1px solid #ddd', background: '#fff', borderRadius: '6px', cursor: 'pointer', marginTop: '0.75rem' }}>
-                        Cancel Request
-                    </button>
-                </form>
-            )}
- 
-            {stage === 'success' && (
-                <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-                    <ShieldCheck size={48} color="#10b981" style={{ margin: '0 auto 1rem' }} />
-                    <h4 style={{ color: '#10b981', marginBottom: '0.5rem', fontSize: '1.25rem', fontWeight: 700 }}>Authentication Matrix Updated</h4>
-                    <p style={{ color: '#555555', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                        Your new password is now active. Any subsequent logins will require these credentials.
-                    </p>
-                    <button onClick={() => { setStage('idle'); setMessage(''); }} className="btn-primary" style={{ margin: '0 auto', width: 'auto', background: '#10b981', color: '#fff', padding: '0.5rem 1.25rem', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
-                        Acknowledge
-                    </button>
+            <h3 style={{ color: '#d97706', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <KeyRound size={20} /> Change Password
+            </h3>
+
+            {pwError && <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: '8px', padding: '10px 14px', fontSize: '0.875rem', marginBottom: '1rem' }}>{pwError}</div>}
+            {pwMessage && <div style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', borderRadius: '8px', padding: '10px 14px', fontSize: '0.875rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldCheck size={16} /> {pwMessage}
+            </div>}
+
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Current Password</label>
+                    <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={e => setCurrentPassword(e.target.value)}
+                        required
+                        placeholder="Enter your current password"
+                        style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                    />
                 </div>
-            )}
+                <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>New Password</label>
+                    <input
+                        type="password"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        required
+                        placeholder="At least 6 characters"
+                        style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                    />
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Confirm New Password</label>
+                    <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        required
+                        placeholder="Repeat new password"
+                        style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                    />
+                </div>
+                <button
+                    type="submit"
+                    disabled={pwLoading}
+                    style={{ background: '#f59e0b', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.65rem 1rem', fontWeight: 700, fontSize: '0.9rem', cursor: pwLoading ? 'wait' : 'pointer', opacity: pwLoading ? 0.7 : 1 }}
+                >
+                    {pwLoading ? 'Updating...' : 'Update Password'}
+                </button>
+            </form>
         </div>
       </div>
     </div>
