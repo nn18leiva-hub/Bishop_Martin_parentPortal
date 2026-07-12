@@ -20,7 +20,41 @@ import { useNavigate } from 'react-router-dom';
 
 const BankDetails = () => {
   const navigate = useNavigate();
-  const { t } = useSettings();
+  const { t, theme } = useSettings();
+  const dk = theme === 'dark';
+
+  // Dark-mode aware palette
+  const c = {
+    pageBg:        dk ? '#121212'   : '#faf9f6',
+    cardBg:        dk ? '#1a1a1a'   : '#ffffff',
+    cardBorder:    dk ? '#2a2a2a'   : '#eaeaea',
+    headerBg:      dk ? '#161616'   : '#ffffff',
+    headerBorder:  dk ? '#2a2a2a'   : '#eaeaea',
+    warmBg:        dk ? '#1e1c18'   : '#f4f1eb',
+    warmBorder:    dk ? '#2e2b24'   : '#e5e3df',
+    warmDivider:   dk ? '#2e2b24'   : '#e0deda',
+    alertBg:       dk ? '#1e1a0d'   : '#fff9e6',
+    assistBg:      dk ? '#1c1c1c'   : '#f7f6f4',
+    assistBorder:  dk ? '#2a2a2a'   : '#e8e6e1',
+    refBg:         dk ? '#252218'   : '#f4f1eb',
+    copyBtnBg:     dk ? '#2d2d2d'   : '#ffffff',
+    copyBtnBorder: dk ? '#444444'   : '#dcdad5',
+    textMain:      dk ? '#e8e8e8'   : '#1a1a1a',
+    textSub:       dk ? '#888888'   : '#666663',
+    textMuted:     dk ? '#666666'   : '#8e8b82',
+    textValue:     dk ? '#dddddd'   : '#2d2d2d',
+    divider:       dk ? '#2a2a2a'   : '#f0f0f0',
+    stepInactiveBg:dk ? '#2a2a2a'   : '#ffffff',
+    stepInactiveBorder: dk ? '#444' : '#cccccc',
+    pendingBg:     dk ? '#211a00'   : '#fbf5e1',
+    timelineDivider: dk ? '#2a2a2a': '#eaeaea',
+    secondaryBtn:  dk ? '#252525'   : '#ffffff',
+    secondaryBtnBorder: dk ? '#3a3a3a' : '#dcdad5',
+    secondaryBtnText: dk ? '#cccccc': '#4a4743',
+    refTextColor:  dk ? '#d4d0c8'   : '#4a4743',
+    breadcrumbSub: dk ? '#666666'   : '#888888',
+  };
+
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -82,7 +116,7 @@ const BankDetails = () => {
     setCurrentIndex(prev => (prev === requests.length - 1 ? 0 : prev + 1));
   };
 
-  if (loading) return <div style={{ background: '#faf9f6', minHeight: '100vh', padding: '2rem', fontFamily: "'Inter', sans-serif" }}>Loading payment details...</div>;
+  if (loading) return <div style={{ background: c.pageBg, minHeight: '100vh', padding: '2rem', fontFamily: "'Inter', sans-serif", color: c.textMain }}>Loading payment details...</div>;
 
   // Use dynamic request data if available in the database, otherwise default to the exact mockup data
   const activeRequest = requests.length > 0 ? requests[currentIndex] : null;
@@ -114,12 +148,12 @@ const BankDetails = () => {
   const transferRef = `DOC-REQ-2024-${studentName.split(' ').pop().toUpperCase()}`;
 
   return (
-    <div style={{ background: '#faf9f6', minHeight: '100vh', paddingBottom: '3rem' }}>
+    <div style={{ background: c.pageBg, minHeight: '100vh', paddingBottom: '3rem' }}>
       
       {/* Top Header */}
       <header style={{
-        background: '#ffffff',
-        borderBottom: '1px solid #eaeaea',
+        background: c.headerBg,
+        borderBottom: `1px solid ${c.headerBorder}`,
         padding: '0.8rem 2.5rem',
         display: 'flex',
         alignItems: 'center',
@@ -131,19 +165,19 @@ const BankDetails = () => {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <button 
             onClick={() => navigate('/dashboard/parents')} 
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#7a0c2e', fontSize: '1rem', fontWeight: 'bold', padding: 0, marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: dk ? '#e06080' : '#7a0c2e', fontSize: '1rem', fontWeight: 'bold', padding: 0, marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}
           >
             <ArrowLeft size={16} /> {t('bank_transfer_details')}
           </button>
-          <div style={{ fontSize: '0.8rem', color: '#888888', fontFamily: "'Inter', sans-serif" }}>
+          <div style={{ fontSize: '0.8rem', color: c.breadcrumbSub, fontFamily: "'Inter', sans-serif" }}>
             {t('requests')} &gt; {docRef} &gt; {t('document_fee_payment')}
           </div>
         </div>
 
         {/* Action icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555' }}><Bell size={20} /></button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555' }}><User size={20} /></button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textSub }}><Bell size={20} /></button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textSub }}><User size={20} /></button>
         </div>
       </header>
 
@@ -156,7 +190,7 @@ const BankDetails = () => {
           display: 'flex',
           alignItems: 'flex-start',
           gap: '1rem',
-          background: '#fff9e6',
+          background: c.alertBg,
           borderLeft: '4px solid #cca43b',
           borderRadius: '4px',
           padding: '1.25rem',
@@ -177,8 +211,8 @@ const BankDetails = () => {
             flexShrink: 0,
             marginTop: '2px'
           }}>i</div>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', lineHeight: 1.5, color: '#3c3a35' }}>
-            <strong style={{ display: 'block', fontSize: '0.95rem', color: '#1a1a1a', marginBottom: '4px' }}>{t('document_processing_details')}</strong>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', lineHeight: 1.5, color: c.textMain }}>
+            <strong style={{ display: 'block', fontSize: '0.95rem', color: c.textMain, marginBottom: '4px' }}>{t('document_processing_details')}</strong>
             {t('bank_details_instruction')}
           </div>
         </div>
@@ -190,8 +224,8 @@ const BankDetails = () => {
           <div style={{ flex: '1 1 600px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             
             <div style={{
-              background: '#ffffff',
-              border: '1px solid #eaeaea',
+              background: c.cardBg,
+              border: `1px solid ${c.cardBorder}`,
               borderRadius: '8px',
               padding: '2rem',
               boxSizing: 'border-box',
@@ -209,7 +243,7 @@ const BankDetails = () => {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  backgroundColor: '#f9f6e8',
+                  backgroundColor: dk ? '#2a2212' : '#f9f6e8',
                   border: '1.5px solid #cca43b',
                   display: 'flex',
                   alignItems: 'center',
@@ -218,7 +252,7 @@ const BankDetails = () => {
                 }}>
                   <Check size={12} strokeWidth={3} />
                 </div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1a1a1a', margin: 0, letterSpacing: '0.04em', fontFamily: "'Inter', sans-serif" }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: c.textMain, margin: 0, letterSpacing: '0.04em', fontFamily: "'Inter', sans-serif" }}>
                   {t('official_receiving_account')}
                 </h3>
               </div>
@@ -226,49 +260,49 @@ const BankDetails = () => {
               {/* Bank Info Fields */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem 1.5rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif", marginBottom: '2rem' }}>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('bank_name')}</div>
-                  <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem', fontFamily: 'Georgia, serif' }}>Heritage Trust International</div>
+                  <div style={{ color: c.textMuted, fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('bank_name')}</div>
+                  <div style={{ color: c.textValue, fontWeight: 'bold', fontSize: '1.25rem', fontFamily: 'Georgia, serif' }}>Heritage Trust International</div>
                 </div>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('account_holder')}</div>
-                  <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem', fontFamily: 'Georgia, serif' }}>Bishop Martin High School</div>
+                  <div style={{ color: c.textMuted, fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('account_holder')}</div>
+                  <div style={{ color: c.textValue, fontWeight: 'bold', fontSize: '1.25rem', fontFamily: 'Georgia, serif' }}>Bishop Martin High School</div>
                 </div>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('account_number')}</div>
-                  <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem' }}>HTI-002-8839-441-9</div>
+                  <div style={{ color: c.textMuted, fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('account_number')}</div>
+                  <div style={{ color: c.textValue, fontWeight: 'bold', fontSize: '1.25rem' }}>HTI-002-8839-441-9</div>
                 </div>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('branch_code')}</div>
-                  <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem' }}>884-0012</div>
+                  <div style={{ color: c.textMuted, fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('branch_code')}</div>
+                  <div style={{ color: c.textValue, fontWeight: 'bold', fontSize: '1.25rem' }}>884-0012</div>
                 </div>
               </div>
 
               {/* Reference number block */}
-              <div style={{ width: '100%', height: '1px', backgroundColor: '#f0f0f0', marginBottom: '1.5rem' }} />
+              <div style={{ width: '100%', height: '1px', backgroundColor: c.divider, marginBottom: '1.5rem' }} />
 
               <div style={{ fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
-                <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>{t('transfer_reference')}</div>
+                <div style={{ color: c.textMuted, fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>{t('transfer_reference')}</div>
                 
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  background: '#f4f1eb',
+                  background: c.refBg,
                   borderRadius: '6px',
                   padding: '0.75rem 1rem',
                   boxSizing: 'border-box'
                 }}>
-                  <strong style={{ color: '#4a4743', fontSize: '0.95rem' }}>{transferRef}</strong>
+                  <strong style={{ color: c.refTextColor, fontSize: '0.95rem' }}>{transferRef}</strong>
                   <button 
                     onClick={() => copyToClipboard(transferRef)}
                     style={{
-                      background: '#ffffff',
-                      border: '1px solid #dcdad5',
+                      background: c.copyBtnBg,
+                      border: `1px solid ${c.copyBtnBorder}`,
                       borderRadius: '4px',
                       padding: '0.35rem 0.75rem',
                       fontSize: '0.75rem',
                       fontWeight: 700,
-                      color: '#4a4743',
+                      color: c.secondaryBtnText,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -289,8 +323,8 @@ const BankDetails = () => {
             
             {requests.length === 0 ? (
               <div style={{
-                background: '#ffffff',
-                border: '1px solid #eaeaea',
+                background: c.cardBg,
+                border: `1px solid ${c.cardBorder}`,
                 borderRadius: '12px',
                 padding: '2.5rem 1.75rem',
                 boxSizing: 'border-box',
@@ -299,10 +333,10 @@ const BankDetails = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
               }}>
                 <CheckCircle size={56} color="#10b981" style={{ marginBottom: '1.25rem', display: 'block', margin: '0 auto 1.25rem auto' }} />
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 0.5rem 0', fontFamily: 'Georgia, serif' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: c.textMain, margin: '0 0 0.5rem 0', fontFamily: 'Georgia, serif' }}>
                   {t('no_payments_due')}
                 </h3>
-                <p style={{ fontSize: '0.85rem', color: '#666663', lineHeight: 1.5, margin: 0 }}>
+                <p style={{ fontSize: '0.85rem', color: c.textSub, lineHeight: 1.5, margin: 0 }}>
                   {t('no_payments_due_desc')}
                 </p>
               </div>
@@ -310,13 +344,13 @@ const BankDetails = () => {
               <>
                 {/* Summary details card */}
                 <div style={{
-                  background: '#f4f1eb',
-                  border: '1px solid #e5e3df',
+                  background: c.warmBg,
+                  border: `1px solid ${c.warmBorder}`,
                   borderRadius: '8px',
                   padding: '1.75rem',
                   boxSizing: 'border-box'
                 }}>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.25rem 0', fontFamily: 'Georgia, serif', borderBottom: '1px solid #e0deda', paddingBottom: '0.5rem' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 'bold', color: c.textMain, margin: '0 0 1.25rem 0', fontFamily: 'Georgia, serif', borderBottom: `1px solid ${c.warmDivider}`, paddingBottom: '0.5rem' }}>
                     {t('request_summary')}
                   </h3>
 
@@ -325,8 +359,8 @@ const BankDetails = () => {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      background: '#ffffff',
-                      border: '1px solid #e0deda',
+                      background: c.cardBg,
+                      border: `1px solid ${c.warmDivider}`,
                       borderRadius: '6px',
                       padding: '6px 12px',
                       marginBottom: '1.25rem',
@@ -349,7 +383,7 @@ const BankDetails = () => {
                       >
                         &larr;
                       </button>
-                      <span style={{ color: '#4a4743' }}>Request {currentIndex + 1} of {requests.length}</span>
+                      <span style={{ color: c.secondaryBtnText }}>Request {currentIndex + 1} of {requests.length}</span>
                       <button 
                         onClick={handleNext}
                         style={{
@@ -369,28 +403,28 @@ const BankDetails = () => {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>{t('reference')}</span>
-                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{docRef}</span>
+                      <span style={{ color: c.textSub }}>{t('reference')}</span>
+                      <span style={{ fontWeight: 600, color: c.textMain }}>{docRef}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>{t('student')}</span>
-                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{studentName}</span>
+                      <span style={{ color: c.textSub }}>{t('student')}</span>
+                      <span style={{ fontWeight: 600, color: c.textMain }}>{studentName}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>{t('grade_level')}</span>
-                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{gradeLevel}</span>
+                      <span style={{ color: c.textSub }}>{t('grade_level')}</span>
+                      <span style={{ fontWeight: 600, color: c.textMain }}>{gradeLevel}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>{t('due_date')}</span>
-                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{dateFormatted}</span>
+                      <span style={{ color: c.textSub }}>{t('due_date')}</span>
+                      <span style={{ fontWeight: 600, color: c.textMain }}>{dateFormatted}</span>
                     </div>
 
-                    <div style={{ width: '100%', height: '1px', backgroundColor: '#e0deda', margin: '0.5rem 0' }} />
+                    <div style={{ width: '100%', height: '1px', backgroundColor: c.warmDivider, margin: '0.5rem 0' }} />
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <strong style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>{t('document_fee')}</strong>
-                        <span style={{ display: 'block', fontSize: '0.68rem', color: '#888885', marginTop: '2px' }}>{t('processing_fees_included')}</span>
+                        <strong style={{ fontSize: '0.9rem', color: c.textMain }}>{t('document_fee')}</strong>
+                        <span style={{ display: 'block', fontSize: '0.68rem', color: c.textMuted, marginTop: '2px' }}>{t('processing_fees_included')}</span>
                       </div>
                       <span style={{ color: '#7a0c2e', fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
                         {documentFee}
@@ -401,7 +435,7 @@ const BankDetails = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      background: '#fbf5e1',
+                      background: c.pendingBg,
                       borderRadius: '6px',
                       padding: '0.5rem 0.75rem',
                       color: '#b78103',
@@ -449,9 +483,9 @@ const BankDetails = () => {
                   </label>
 
                   <button style={{
-                    background: '#ffffff',
-                    border: '1px solid #dcdad5',
-                    color: '#4a4743',
+                    background: c.secondaryBtn,
+                    border: `1px solid ${c.secondaryBtnBorder}`,
+                    color: c.secondaryBtnText,
                     padding: '0.75rem 1rem',
                     borderRadius: '6px',
                     fontWeight: 'bold',
@@ -470,7 +504,7 @@ const BankDetails = () => {
                   <button style={{
                     background: 'none',
                     border: 'none',
-                    color: '#4a4743',
+                    color: c.secondaryBtnText,
                     fontSize: '0.85rem',
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -489,14 +523,14 @@ const BankDetails = () => {
 
             {/* Assistance card */}
             <div style={{
-              background: '#f7f6f4',
-              border: '1px solid #e8e6e1',
+              background: c.assistBg,
+              border: `1px solid ${c.assistBorder}`,
               borderRadius: '6px',
               padding: '1.25rem',
               boxSizing: 'border-box'
             }}>
-              <strong style={{ display: 'block', fontSize: '0.85rem', color: '#1a1a1a', marginBottom: '4px', fontFamily: "'Inter', sans-serif" }}>{t('need_assistance')}</strong>
-              <p style={{ fontSize: '0.8rem', color: '#666663', lineHeight: 1.4, margin: '0 0 10px 0', fontFamily: "'Inter', sans-serif" }}>
+              <strong style={{ display: 'block', fontSize: '0.85rem', color: c.textMain, marginBottom: '4px', fontFamily: "'Inter', sans-serif" }}>{t('need_assistance')}</strong>
+              <p style={{ fontSize: '0.8rem', color: c.textSub, lineHeight: 1.4, margin: '0 0 10px 0', fontFamily: "'Inter', sans-serif" }}>
                 {t('need_assistance_desc')}
               </p>
               <button 
@@ -513,14 +547,14 @@ const BankDetails = () => {
         {/* Bottom Timeline Stepper */}
         {requests.length > 0 && (
           <div style={{
-            background: '#ffffff',
-            border: '1px solid #eaeaea',
+            background: c.cardBg,
+            border: `1px solid ${c.cardBorder}`,
             borderRadius: '8px',
             padding: '1.75rem 2rem',
             boxSizing: 'border-box',
             marginTop: '2rem'
           }}>
-            <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.5rem 0', fontFamily: "'Inter', sans-serif" }}>
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', color: c.textMain, margin: '0 0 1.5rem 0', fontFamily: "'Inter', sans-serif" }}>
               Payment Processing Timeline
             </h4>
 
@@ -557,7 +591,7 @@ const BankDetails = () => {
                   height: '24px',
                   borderRadius: '50%',
                   border: '1.5px solid #cca43b',
-                  backgroundColor: '#ffffff',
+                  backgroundColor: c.stepInactiveBg,
                   color: '#cca43b',
                   display: 'flex',
                   alignItems: 'center',
@@ -572,7 +606,7 @@ const BankDetails = () => {
               </div>
 
               {/* Line 2 */}
-              <div style={{ flex: 1, minWidth: '40px', height: '1.5px', backgroundColor: '#eaeaea' }} />
+              <div style={{ flex: 1, minWidth: '40px', height: '1.5px', backgroundColor: c.timelineDivider }} />
 
               {/* Step 3 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -580,8 +614,8 @@ const BankDetails = () => {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  border: '1.5px solid #cccccc',
-                  backgroundColor: '#ffffff',
+                  border: `1.5px solid ${c.stepInactiveBorder}`,
+                  backgroundColor: c.stepInactiveBg,
                   color: '#888888',
                   display: 'flex',
                   alignItems: 'center',
