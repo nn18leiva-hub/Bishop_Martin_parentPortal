@@ -26,12 +26,13 @@ const getRefPrefix = (typeName) => {
   return 'CR';
 };
 
-const genRef = (req) => {
-  if (req.request_id === 4022) return 'REFERENCE #TR-4022';
-  if (req.request_id === 9128) return 'REFERENCE #MD-9128';
-  if (req.request_id === 1033) return 'REFERENCE #FT-1033';
+const genRef = (req, t) => {
+  const prefix = t('reference_label');
+  if (req.request_id === 4022) return `${prefix} #TR-4022`;
+  if (req.request_id === 9128) return `${prefix} #MD-9128`;
+  if (req.request_id === 1033) return `${prefix} #FT-1033`;
   const typeName = req.document_type_name || '';
-  return `REFERENCE #${getRefPrefix(typeName)}-${String(req.request_id).padStart(4, '0')}`;
+  return `${prefix} #${getRefPrefix(typeName)}-${String(req.request_id).padStart(4, '0')}`;
 };
 
 const getFormattedDate = (req) => {
@@ -43,12 +44,12 @@ const getFormattedDate = (req) => {
 
 const getStudentName = (req) => {
   if (req.request_id === 4022) return 'Eleanor Smith';
-  if (req.request_id === 9128) return 'Thomas Smith';
+  if (req.request_id === 9128) return 'Theodore Hayes';
   if (req.request_id === 1033) return 'Eleanor Smith';
-  return req.student_full_name || 'Eleanor Smith';
+  return req.student_full_name || 'N/A';
 };
 
-const getStatusBadge = (status, typeName = '') => {
+const getStatusBadge = (status, typeName = '', t) => {
   const name = typeName.toLowerCase();
   let computedStatus = status;
   if (name.includes('transcript')) {
@@ -75,7 +76,7 @@ const getStatusBadge = (status, typeName = '') => {
           fontWeight: 'bold',
           letterSpacing: '0.04em'
         }}>
-          <span style={{ fontSize: '1.1rem', color: '#2e7d32', lineHeight: '0.8', marginRight: '2px' }}>•</span> ISSUED
+          <span style={{ fontSize: '1.1rem', color: '#2e7d32', lineHeight: '0.8', marginRight: '2px' }}>•</span> {t('issued')}
         </span>
       );
     case 'processing':
@@ -93,7 +94,7 @@ const getStatusBadge = (status, typeName = '') => {
           fontWeight: 'bold',
           letterSpacing: '0.04em'
         }}>
-          <span style={{ fontSize: '1.1rem', color: '#c8a000', lineHeight: '0.8', marginRight: '2px' }}>•</span> PROCESSING
+          <span style={{ fontSize: '1.1rem', color: '#c8a000', lineHeight: '0.8', marginRight: '2px' }}>•</span> {t('processing')}
         </span>
       );
     case 'pending':
@@ -127,8 +128,8 @@ const getStatusBadge = (status, typeName = '') => {
             lineHeight: '1'
           }}>!</span>
           <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-            <span>ACTION</span>
-            <span style={{ fontSize: '0.6rem' }}>REQUIRED</span>
+            <span>{t('action')}</span>
+            <span style={{ fontSize: '0.6rem' }}>{t('required')}</span>
           </div>
         </span>
       );
@@ -369,14 +370,14 @@ const Dashboard = () => {
         </div>
 
         {loading ? (
-          <div className="db-empty-state">Loading requests...</div>
+          <div className="db-empty-state">{t('loading_requests')}</div>
         ) : error ? (
           <div className="db-empty-state db-error-text">{error}</div>
         ) : displayRequests.length === 0 ? (
           <div className="db-empty-state">
-            <p>No document requests yet.</p>
+            <p>{t('no_document_requests_yet')}</p>
             <Link to="/dashboard/parents/new" className="db-new-request-btn">
-              New Request
+              {t('new_request')}
             </Link>
           </div>
         ) : (
@@ -386,10 +387,10 @@ const Dashboard = () => {
               <table className="db-table">
                 <thead>
                   <tr style={{ background: '#faf9f6' }}>
-                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>DOCUMENT TYPE</th>
-                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>STUDENT</th>
-                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>DATE REQUESTED</th>
-                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>STATUS</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('document_type')}</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('student_header')}</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('date_requested')}</th>
+                    <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('status_header')}</th>
                     {showUploadCol && <th></th>}
                   </tr>
                 </thead>
@@ -404,14 +405,14 @@ const Dashboard = () => {
                           color: '#7a0c2e',
                           marginBottom: '4px'
                         }}>
-                          {req.document_type_name}
+                          {t(req.document_type_name)}
                         </div>
                         <div className="db-doc-ref" style={{
                           fontSize: '0.7rem',
                           color: '#8e8b82',
                           fontFamily: "'Inter', sans-serif"
                         }}>
-                          {genRef(req)}
+                          {genRef(req, t)}
                         </div>
                       </td>
                       <td className="db-student-name" style={{
@@ -430,13 +431,13 @@ const Dashboard = () => {
                         {getFormattedDate(req)}
                       </td>
                       <td style={{ padding: '1.1rem 1.5rem' }}>
-                        {getStatusBadge(req.status, req.document_type_name)}
+                        {getStatusBadge(req.status, req.document_type_name, t)}
                       </td>
                       {showUploadCol && (
                         <td style={{ padding: '1.1rem 1.5rem' }}>
                           {getDocInfo(req.document_type_id).requires_payment && req.status === 'pending' && req.request_id > 10000 && (
                             <label className="db-upload-btn">
-                              {uploadingReceipt === req.request_id ? 'Uploading...' : <><UploadCloud size={14} /> Upload Receipt</>}
+                              {uploadingReceipt === req.request_id ? t('uploading') : <><UploadCloud size={14} /> {t('upload_receipt')}</>}
                               <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleReceiptUpload(req.request_id, e)} disabled={uploadingReceipt === req.request_id} />
                             </label>
                           )}
@@ -459,9 +460,9 @@ const Dashboard = () => {
               backgroundColor: '#ffffff'
             }}>
               <span style={{ fontSize: '0.8rem', color: '#8e8b82', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Showing {displayRequests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, displayRequests.length)} of {displayRequests.length} requests
+                {t('showing')} {displayRequests.length > 0 ? startIndex + 1 : 0} {t('to')} {Math.min(startIndex + itemsPerPage, displayRequests.length)} {t('of')} {displayRequests.length} {t('requests_lower')}
                 <span style={{ margin: '0 8px', color: '#ccc' }}>|</span>
-                Show
+                {t('show')}
                 <select
                   value={itemsPerPage}
                   onChange={(e) => {
@@ -485,7 +486,7 @@ const Dashboard = () => {
                   <option value="10">10</option>
                   <option value="25">25</option>
                 </select>
-                per page
+                {t('per_page')}
               </span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button
@@ -560,7 +561,7 @@ const Dashboard = () => {
               fontStyle: 'italic',
               fontFamily: "'Inter', sans-serif"
             }}>
-              Document requests are typically processed within 3-5 business days. For urgent matters, please contact the registrar's office.
+              {t('footer_processing_note')}
             </div>
           </>
         )}
