@@ -12,7 +12,8 @@ import {
   Copy, 
   Bell, 
   User, 
-  ArrowLeft 
+  ArrowLeft,
+  CheckCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -284,182 +285,205 @@ const BankDetails = () => {
           {/* Right Column: Invoice Details & Actions */}
           <div style={{ flex: '1 1 350px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
-            {/* Summary details card */}
-            <div style={{
-              background: '#f4f1eb',
-              border: '1px solid #e5e3df',
-              borderRadius: '8px',
-              padding: '1.75rem',
-              boxSizing: 'border-box'
-            }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.25rem 0', fontFamily: 'Georgia, serif', borderBottom: '1px solid #e0deda', paddingBottom: '0.5rem' }}>
-                Request Summary
-              </h3>
-
-              {requests.length > 1 && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  background: '#ffffff',
-                  border: '1px solid #e0deda',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  marginBottom: '1.25rem',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  boxSizing: 'border-box'
-                }}>
-                  <button 
-                    onClick={handlePrev}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#7a0c2e',
-                      cursor: 'pointer',
-                      fontWeight: 800,
-                      padding: '4px 8px',
-                      fontSize: '0.95rem'
-                    }}
-                  >
-                    &larr;
-                  </button>
-                  <span style={{ color: '#4a4743' }}>Request {currentIndex + 1} of {requests.length}</span>
-                  <button 
-                    onClick={handleNext}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#7a0c2e',
-                      cursor: 'pointer',
-                      fontWeight: 800,
-                      padding: '4px 8px',
-                      fontSize: '0.95rem'
-                    }}
-                  >
-                    &rarr;
-                  </button>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666663' }}>Reference</span>
-                  <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{docRef}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666663' }}>Student</span>
-                  <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{studentName}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666663' }}>Grade Level</span>
-                  <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{gradeLevel}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666663' }}>Due Date</span>
-                  <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{dateFormatted}</span>
-                </div>
-
-                <div style={{ width: '100%', height: '1px', backgroundColor: '#e0deda', margin: '0.5rem 0' }} />
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>Document Fee</strong>
-                    <span style={{ display: 'block', fontSize: '0.68rem', color: '#888885', marginTop: '2px' }}>Processing and administrative fees included</span>
-                  </div>
-                  <span style={{ color: '#7a0c2e', fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
-                    {documentFee}
-                  </span>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: '#fbf5e1',
-                  borderRadius: '6px',
-                  padding: '0.5rem 0.75rem',
-                  color: '#b78103',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  marginTop: '0.5rem',
-                  boxSizing: 'border-box'
-                }}>
-                  <span style={{ fontSize: '1rem', lineHeight: '1' }}>•</span>
-                  <span>Payment Awaiting Confirmation</span>
-                </div>
-
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <label style={{
-                background: '#7a0c2e',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.75rem 1rem',
-                borderRadius: '6px',
-                fontWeight: 'bold',
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                fontFamily: "'Inter', sans-serif",
-                textAlign: 'center',
-                boxSizing: 'border-box',
-                width: '100%'
-              }}>
-                {uploadingReceipt ? 'UPLOADING...' : 'UPLOAD TRANSFER RECEIPT'}
-                <Upload size={16} />
-                <input 
-                  type="file" 
-                  style={{ display: 'none' }} 
-                  accept="image/*" 
-                  onChange={(e) => handleReceiptUpload(requestId, e)} 
-                  disabled={uploadingReceipt !== null} 
-                />
-              </label>
-
-              <button style={{
+            {requests.length === 0 ? (
+              <div style={{
                 background: '#ffffff',
-                border: '1px solid #dcdad5',
-                color: '#4a4743',
-                padding: '0.75rem 1rem',
-                borderRadius: '6px',
-                fontWeight: 'bold',
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
+                border: '1px solid #eaeaea',
+                borderRadius: '12px',
+                padding: '2.5rem 1.75rem',
+                boxSizing: 'border-box',
+                textAlign: 'center',
                 fontFamily: "'Inter', sans-serif",
-                boxSizing: 'border-box'
-              }} onClick={() => alert('Downloading PDF invoice...')}>
-                DOWNLOAD INVOICE (PDF) <FileDown size={16} />
-              </button>
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+              }}>
+                <CheckCircle size={56} color="#10b981" style={{ marginBottom: '1.25rem', display: 'block', margin: '0 auto 1.25rem auto' }} />
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 0.5rem 0', fontFamily: 'Georgia, serif' }}>
+                  No Payments Due
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#666663', lineHeight: 1.5, margin: 0 }}>
+                  You currently have no pending document requests requiring payment.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Summary details card */}
+                <div style={{
+                  background: '#f4f1eb',
+                  border: '1px solid #e5e3df',
+                  borderRadius: '8px',
+                  padding: '1.75rem',
+                  boxSizing: 'border-box'
+                }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.25rem 0', fontFamily: 'Georgia, serif', borderBottom: '1px solid #e0deda', paddingBottom: '0.5rem' }}>
+                    Request Summary
+                  </h3>
 
-              <button style={{
-                background: 'none',
-                border: 'none',
-                color: '#4a4743',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                marginTop: '4px',
-                fontFamily: "'Inter', sans-serif"
-              }} onClick={() => window.print()}>
-                <Printer size={15} /> Print Instructions
-              </button>
-            </div>
+                  {requests.length > 1 && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#ffffff',
+                      border: '1px solid #e0deda',
+                      borderRadius: '6px',
+                      padding: '6px 12px',
+                      marginBottom: '1.25rem',
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      boxSizing: 'border-box'
+                    }}>
+                      <button 
+                        onClick={handlePrev}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#7a0c2e',
+                          cursor: 'pointer',
+                          fontWeight: 800,
+                          padding: '4px 8px',
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        &larr;
+                      </button>
+                      <span style={{ color: '#4a4743' }}>Request {currentIndex + 1} of {requests.length}</span>
+                      <button 
+                        onClick={handleNext}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#7a0c2e',
+                          cursor: 'pointer',
+                          fontWeight: 800,
+                          padding: '4px 8px',
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        &rarr;
+                      </button>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#666663' }}>Reference</span>
+                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{docRef}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#666663' }}>Student</span>
+                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{studentName}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#666663' }}>Grade Level</span>
+                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{gradeLevel}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#666663' }}>Due Date</span>
+                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{dateFormatted}</span>
+                    </div>
+
+                    <div style={{ width: '100%', height: '1px', backgroundColor: '#e0deda', margin: '0.5rem 0' }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <strong style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>Document Fee</strong>
+                        <span style={{ display: 'block', fontSize: '0.68rem', color: '#888885', marginTop: '2px' }}>Processing and administrative fees included</span>
+                      </div>
+                      <span style={{ color: '#7a0c2e', fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
+                        {documentFee}
+                      </span>
+                    </div>
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: '#fbf5e1',
+                      borderRadius: '6px',
+                      padding: '0.5rem 0.75rem',
+                      color: '#b78103',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      marginTop: '0.5rem',
+                      boxSizing: 'border-box'
+                    }}>
+                      <span style={{ fontSize: '1rem', lineHeight: '1' }}>•</span>
+                      <span>Payment Awaiting Confirmation</span>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <label style={{
+                    background: '#7a0c2e',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    fontFamily: "'Inter', sans-serif",
+                    textAlign: 'center',
+                    boxSizing: 'border-box',
+                    width: '100%'
+                  }}>
+                    {uploadingReceipt ? 'UPLOADING...' : 'UPLOAD TRANSFER RECEIPT'}
+                    <Upload size={16} />
+                    <input 
+                      type="file" 
+                      style={{ display: 'none' }} 
+                      accept="image/*" 
+                      onChange={(e) => handleReceiptUpload(requestId, e)} 
+                      disabled={uploadingReceipt !== null} 
+                    />
+                  </label>
+
+                  <button style={{
+                    background: '#ffffff',
+                    border: '1px solid #dcdad5',
+                    color: '#4a4743',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    fontFamily: "'Inter', sans-serif",
+                    boxSizing: 'border-box'
+                  }} onClick={() => alert('Downloading PDF invoice...')}>
+                    DOWNLOAD INVOICE (PDF) <FileDown size={16} />
+                  </button>
+
+                  <button style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#4a4743',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    marginTop: '4px',
+                    fontFamily: "'Inter', sans-serif"
+                  }} onClick={() => window.print()}>
+                    <Printer size={15} /> Print Instructions
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Assistance card */}
             <div style={{
@@ -485,90 +509,93 @@ const BankDetails = () => {
         </div>
 
         {/* Bottom Timeline Stepper */}
-        <div style={{
-          background: '#ffffff',
-          border: '1px solid #eaeaea',
-          borderRadius: '8px',
-          padding: '1.75rem 2rem',
-          boxSizing: 'border-box'
-        }}>
-          <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.5rem 0', fontFamily: "'Inter', sans-serif" }}>
-            Payment Processing Timeline
-          </h4>
+        {requests.length > 0 && (
+          <div style={{
+            background: '#ffffff',
+            border: '1px solid #eaeaea',
+            borderRadius: '8px',
+            padding: '1.75rem 2rem',
+            boxSizing: 'border-box',
+            marginTop: '2rem'
+          }}>
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.5rem 0', fontFamily: "'Inter', sans-serif" }}>
+              Payment Processing Timeline
+            </h4>
 
-          {/* Horizontal Stepper timeline layout */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}>
-            
-            {/* Step 1 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                backgroundColor: '#7a0c2e',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Check size={14} strokeWidth={3} />
+            {/* Horizontal Stepper timeline layout */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}>
+              
+              {/* Step 1 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  backgroundColor: '#7a0c2e',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Check size={14} strokeWidth={3} />
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#1a1a1a', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>REQUESTED</strong>
+                  <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>Today, 09:12 AM</span>
+                </div>
               </div>
-              <div>
-                <strong style={{ display: 'block', color: '#1a1a1a', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>REQUESTED</strong>
-                <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>Today, 09:12 AM</span>
+
+              {/* Line 1 */}
+              <div style={{ flex: 1, minWidth: '40px', height: '1.5px', backgroundColor: '#7a0c2e' }} />
+
+              {/* Step 2 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: '1.5px solid #cca43b',
+                  backgroundColor: '#ffffff',
+                  color: '#cca43b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <RotateCw size={12} strokeWidth={3} />
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#cca43b', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>TRANSFER PENDING</strong>
+                  <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>Awaiting action</span>
+                </div>
               </div>
+
+              {/* Line 2 */}
+              <div style={{ flex: 1, minWidth: '40px', height: '1.5px', backgroundColor: '#eaeaea' }} />
+
+              {/* Step 3 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: '1.5px solid #cccccc',
+                  backgroundColor: '#ffffff',
+                  color: '#888888',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Clock size={12} />
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#888888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>VERIFICATION</strong>
+                  <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>24-48 Hours</span>
+                </div>
+              </div>
+
             </div>
-
-            {/* Line 1 */}
-            <div style={{ flex: 1, minWidth: '40px', height: '1.5px', backgroundColor: '#7a0c2e' }} />
-
-            {/* Step 2 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                border: '1.5px solid #cca43b',
-                backgroundColor: '#ffffff',
-                color: '#cca43b',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <RotateCw size={12} strokeWidth={3} />
-              </div>
-              <div>
-                <strong style={{ display: 'block', color: '#cca43b', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>TRANSFER PENDING</strong>
-                <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>Awaiting action</span>
-              </div>
-            </div>
-
-            {/* Line 2 */}
-            <div style={{ flex: 1, minWidth: '40px', height: '1.5px', backgroundColor: '#eaeaea' }} />
-
-            {/* Step 3 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                border: '1.5px solid #cccccc',
-                backgroundColor: '#ffffff',
-                color: '#888888',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Clock size={12} />
-              </div>
-              <div>
-                <strong style={{ display: 'block', color: '#888888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>VERIFICATION</strong>
-                <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>24-48 Hours</span>
-              </div>
-            </div>
-
           </div>
-        </div>
+        )}
 
       </div>
     </div>
