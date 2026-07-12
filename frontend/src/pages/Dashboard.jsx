@@ -289,8 +289,8 @@ const Dashboard = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '1rem',
-          background: '#fcfbfa',
-          border: '1px solid #e8e6e1',
+          background: 'var(--card-bg, #fcfbfa)',
+          border: '1px solid var(--border-color, #e8e6e1)',
           borderRadius: '8px',
           padding: '0.85rem 1.25rem',
           maxWidth: '300px'
@@ -299,7 +299,7 @@ const Dashboard = () => {
             width: '36px',
             height: '36px',
             borderRadius: '6px',
-            backgroundColor: '#e6e4e0',
+            backgroundColor: 'var(--sidebar-icon-bg, #e6e4e0)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -330,18 +330,18 @@ const Dashboard = () => {
 
       {/* Recent Document Requests Table */}
       <div className="db-section-card" style={{
-        background: '#ffffff',
-        border: '1px solid #eaeaea',
+        background: 'var(--card-bg, #ffffff)',
+        border: '1px solid var(--border-color, #eaeaea)',
         borderRadius: '10px',
         overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
       }}>
         <div className="db-section-header" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid #f0f0f0'
+          borderBottom: '1px solid var(--border-color, #f0f0f0)'
         }}>
           <div className="db-section-title-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '4px', height: '4px', backgroundColor: '#cca43b', borderRadius: '50%' }}></div>
@@ -386,7 +386,7 @@ const Dashboard = () => {
             <div className="db-table-wrap">
               <table className="db-table">
                 <thead>
-                  <tr style={{ background: '#faf9f6' }}>
+                  <tr style={{ background: 'var(--table-header-bg, #faf9f6)' }}>
                     <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('document_type')}</th>
                     <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('student_header')}</th>
                     <th style={{ color: '#8e8b82', padding: '0.85rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.06em' }}>{t('date_requested')}</th>
@@ -450,14 +450,14 @@ const Dashboard = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div style={{
+            <div className="db-pagination-bar" style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '1.25rem 1.5rem',
-              borderTop: '1px solid #f0f0f0',
+              borderTop: '1px solid var(--border-color, #f0f0f0)',
               fontFamily: "'Inter', sans-serif",
-              backgroundColor: '#ffffff'
+              backgroundColor: 'var(--card-bg, #ffffff)'
             }}>
               <span style={{ fontSize: '0.8rem', color: '#8e8b82', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {t('showing')} {displayRequests.length > 0 ? startIndex + 1 : 0} {t('to')} {Math.min(startIndex + itemsPerPage, displayRequests.length)} {t('of')} {displayRequests.length} {t('requests_lower')}

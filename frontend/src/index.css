@@ -2039,6 +2039,11 @@ select:-webkit-autofill:focus {
 body.dark {
   background-color: #121212 !important;
   color: #e0e0e0 !important;
+  --card-bg: #181818;
+  --border-color: #2a2a2a;
+  --table-header-bg: #212121;
+  --sidebar-icon-bg: #2d2d2d;
+  --text-color: #e0e0e0;
 }
 
 body.dark .db-app-container {
@@ -2175,4 +2180,179 @@ body.dark .db-sidebar-footer span {
   color: #ffffff !important;
 }
 
+/* ── Dashboard Dark Mode Fixes ─────────────────────────────────────────── */
 
+/* Active requests banner */
+body.dark .db-active-banner {
+  background: #1e1e1e !important;
+  border-color: #2d2d2d !important;
+}
+
+body.dark .db-active-banner-icon {
+  background-color: #2d2d2d !important;
+}
+
+/* Section card & its inner header divider */
+body.dark .db-section-card {
+  background: #181818 !important;
+  border-color: #2a2a2a !important;
+}
+
+body.dark .db-section-header {
+  border-bottom-color: #2a2a2a !important;
+}
+
+/* Table wrap / overriding inline white background */
+body.dark .db-table-wrap {
+  background: #181818 !important;
+}
+
+body.dark .db-table {
+  background: #181818 !important;
+}
+
+/* Table header row – inline style uses #faf9f6 */
+body.dark .db-table thead tr {
+  background: #212121 !important;
+}
+
+body.dark .db-table thead th {
+  background: #212121 !important;
+  color: #666666 !important;
+  border-bottom: 1px solid #2a2a2a !important;
+}
+
+/* Table body rows */
+body.dark .db-table tbody tr {
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #242424 !important;
+}
+
+body.dark .db-table tbody tr:hover {
+  background: #222222 !important;
+}
+
+/* Document name (crimson text) - keep brand color but softer in dark */
+body.dark .db-doc-name {
+  color: #d4607a !important;
+}
+
+/* Reference text */
+body.dark .db-doc-ref {
+  color: #666666 !important;
+}
+
+/* Student name cell */
+body.dark .db-student-name {
+  color: #cccccc !important;
+}
+
+/* Date cell */
+body.dark .db-date {
+  color: #999999 !important;
+}
+
+/* Status badges – light backgrounds clash badly in dark mode */
+body.dark .db-badge-issued {
+  background: #0d2e14 !important;
+  border-color: #1a5928 !important;
+  color: #4ade80 !important;
+}
+
+body.dark .db-badge-issued span {
+  color: #4ade80 !important;
+}
+
+body.dark .db-badge-processing {
+  background: #2a2000 !important;
+  border-color: #4a3800 !important;
+  color: #f0c040 !important;
+}
+
+body.dark .db-badge-processing span {
+  color: #f0c040 !important;
+}
+
+body.dark .db-badge-action {
+  background: #2e0a0a !important;
+  border-color: #5a1a1a !important;
+  color: #f87171 !important;
+}
+
+body.dark .db-badge-action span:first-child {
+  background-color: #c62828 !important;
+  color: #ffffff !important;
+}
+
+/* Pagination bar – inline style uses #ffffff background */
+body.dark .db-pagination-bar {
+  background: #1a1a1a !important;
+  border-top-color: #2a2a2a !important;
+}
+
+/* Catch the pagination wrapper div (no class, uses inline style) */
+body.dark .db-section-card > div:not(.db-section-header):not(.db-table-wrap):not(.db-table-footer-note) {
+  background: #1a1a1a !important;
+  border-top-color: #2a2a2a !important;
+}
+
+/* Pagination "showing" text */
+body.dark .db-section-card > div span {
+  color: #777777 !important;
+}
+
+/* Pagination page number buttons */
+body.dark .db-section-card button {
+  background: none !important;
+  color: #777777 !important;
+}
+
+/* Pagination active page button */
+body.dark .db-section-card button[style*="background: rgb(122, 12, 46)"],
+body.dark .db-section-card button[style*="background: #7a0c2e"] {
+  background: #7a0c2e !important;
+  color: #ffffff !important;
+}
+
+/* Pagination prev/next arrow */
+body.dark .db-section-card button[title="Previous Page"],
+body.dark .db-section-card button[title="Next Page"] {
+  color: #9a2a4e !important;
+}
+
+/* Pagination select dropdown */
+body.dark .db-section-card select {
+  background: #252525 !important;
+  border-color: #3a3a3a !important;
+  color: #cccccc !important;
+}
+
+/* Footer processing note */
+body.dark .db-table-footer-note {
+  background: #181818 !important;
+  border-top-color: #2a2a2a !important;
+  color: #555555 !important;
+}
+
+/* "View All" link and section heading crimson – soften for dark */
+body.dark .db-view-all-link {
+  color: #d4607a !important;
+}
+
+/* Section title dot */
+body.dark .db-section-title-row > div:first-child {
+  background-color: #cca43b !important;
+}
+
+/* Upload receipt button */
+body.dark .db-upload-btn {
+  background: #2d2d2d !important;
+  color: #dddddd !important;
+  border-color: #444444 !important;
+}
+
+/* Empty state */
+body.dark .db-empty-state {
+  color: #666666 !important;
+  background: #181818 !important;
+}
