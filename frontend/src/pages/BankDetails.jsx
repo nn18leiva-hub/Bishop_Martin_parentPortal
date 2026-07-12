@@ -11,12 +11,12 @@ import {
   Clock, 
   Info, 
   Copy, 
-  Bell, 
   User, 
   ArrowLeft,
   CheckCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import HeaderActions from '../components/HeaderActions';
 
 const BankDetails = () => {
   const navigate = useNavigate();
@@ -175,9 +175,15 @@ const BankDetails = () => {
         </div>
 
         {/* Action icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textSub }}><Bell size={20} /></button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textSub }}><User size={20} /></button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <HeaderActions />
+          <button
+            onClick={() => navigate('/dashboard/parents/user-management')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textSub, display: 'flex', alignItems: 'center', padding: '4px' }}
+            title="User Management"
+          >
+            <User size={20} />
+          </button>
         </div>
       </header>
 
