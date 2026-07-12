@@ -253,25 +253,27 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* New Entry Button */}
-        <div className="db-sidebar-new-btn-wrap" style={{ marginBottom: '1.25rem' }}>
-          <Link to="/dashboard/parents/new" className="db-sidebar-new-btn" style={{ 
-            background: '#5c0922', 
-            color: '#ffffff', 
-            padding: '0.65rem 1rem', 
-            borderRadius: '6px', 
-            fontWeight: 700, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            textDecoration: 'none',
-            fontSize: '0.85rem',
-            fontFamily: "'Inter', sans-serif"
-          }}>
-            <span>{t('new_entry')}</span>
-            <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>+</span>
-          </Link>
-        </div>
+        {/* New Entry Button — only for Parent / Guardian accounts */}
+        {isParent && (
+          <div className="db-sidebar-new-btn-wrap" style={{ marginBottom: '1.25rem' }}>
+            <Link to="/dashboard/parents/new" className="db-sidebar-new-btn" style={{ 
+              background: '#5c0922', 
+              color: '#ffffff', 
+              padding: '0.65rem 1rem', 
+              borderRadius: '6px', 
+              fontWeight: 700, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              textDecoration: 'none',
+              fontSize: '0.85rem',
+              fontFamily: "'Inter', sans-serif"
+            }}>
+              <span>{t('new_entry')}</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>+</span>
+            </Link>
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="db-sidebar-nav" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
