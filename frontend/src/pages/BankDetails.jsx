@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
+import { useSettings } from '../contexts/ThemeLanguageContext';
 import { 
   Upload, 
   FileDown, 
@@ -19,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 
 const BankDetails = () => {
   const navigate = useNavigate();
+  const { t } = useSettings();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -131,10 +133,10 @@ const BankDetails = () => {
             onClick={() => navigate('/dashboard/parents')} 
             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#7a0c2e', fontSize: '1rem', fontWeight: 'bold', padding: 0, marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}
           >
-            <ArrowLeft size={16} /> Bank Transfer Details
+            <ArrowLeft size={16} /> {t('bank_transfer_details')}
           </button>
           <div style={{ fontSize: '0.8rem', color: '#888888', fontFamily: "'Inter', sans-serif" }}>
-            Requests &gt; {docRef} &gt; Document Fee Payment
+            {t('requests')} &gt; {docRef} &gt; {t('document_fee_payment')}
           </div>
         </div>
 
@@ -176,8 +178,8 @@ const BankDetails = () => {
             marginTop: '2px'
           }}>i</div>
           <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', lineHeight: 1.5, color: '#3c3a35' }}>
-            <strong style={{ display: 'block', fontSize: '0.95rem', color: '#1a1a1a', marginBottom: '4px' }}>Document Processing Details</strong>
-            To finalize your document request, please initiate a transfer for the processing fee from your bank account using the details below. Once completed, upload your receipt using the portal or via email to <strong style={{ color: '#7a0c2e' }}>registrar@bishopmartin.edu</strong>.
+            <strong style={{ display: 'block', fontSize: '0.95rem', color: '#1a1a1a', marginBottom: '4px' }}>{t('document_processing_details')}</strong>
+            {t('bank_details_instruction')}
           </div>
         </div>
 
@@ -217,26 +219,26 @@ const BankDetails = () => {
                   <Check size={12} strokeWidth={3} />
                 </div>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1a1a1a', margin: 0, letterSpacing: '0.04em', fontFamily: "'Inter', sans-serif" }}>
-                  OFFICIAL RECEIVING ACCOUNT
+                  {t('official_receiving_account')}
                 </h3>
               </div>
 
               {/* Bank Info Fields */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem 1.5rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif", marginBottom: '2rem' }}>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>BANK NAME</div>
+                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('bank_name')}</div>
                   <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem', fontFamily: 'Georgia, serif' }}>Heritage Trust International</div>
                 </div>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>ACCOUNT HOLDER</div>
+                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('account_holder')}</div>
                   <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem', fontFamily: 'Georgia, serif' }}>Bishop Martin High School</div>
                 </div>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>ACCOUNT NUMBER (SWIFT/IBAN)</div>
+                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('account_number')}</div>
                   <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem' }}>HTI-002-8839-441-9</div>
                 </div>
                 <div>
-                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>BRANCH CODE / ROUTING</div>
+                  <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>{t('branch_code')}</div>
                   <div style={{ color: '#2d2d2d', fontWeight: 'bold', fontSize: '1.25rem' }}>884-0012</div>
                 </div>
               </div>
@@ -245,7 +247,7 @@ const BankDetails = () => {
               <div style={{ width: '100%', height: '1px', backgroundColor: '#f0f0f0', marginBottom: '1.5rem' }} />
 
               <div style={{ fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
-                <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>TRANSFER REFERENCE (MANDATORY)</div>
+                <div style={{ color: '#8e8b82', fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>{t('transfer_reference')}</div>
                 
                 <div style={{
                   display: 'flex',
@@ -298,10 +300,10 @@ const BankDetails = () => {
               }}>
                 <CheckCircle size={56} color="#10b981" style={{ marginBottom: '1.25rem', display: 'block', margin: '0 auto 1.25rem auto' }} />
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 0.5rem 0', fontFamily: 'Georgia, serif' }}>
-                  No Payments Due
+                  {t('no_payments_due')}
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: '#666663', lineHeight: 1.5, margin: 0 }}>
-                  You currently have no pending document requests requiring payment.
+                  {t('no_payments_due_desc')}
                 </p>
               </div>
             ) : (
@@ -315,7 +317,7 @@ const BankDetails = () => {
                   boxSizing: 'border-box'
                 }}>
                   <h3 style={{ fontSize: '1.15rem', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 1.25rem 0', fontFamily: 'Georgia, serif', borderBottom: '1px solid #e0deda', paddingBottom: '0.5rem' }}>
-                    Request Summary
+                    {t('request_summary')}
                   </h3>
 
                   {requests.length > 1 && (
@@ -367,19 +369,19 @@ const BankDetails = () => {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>Reference</span>
+                      <span style={{ color: '#666663' }}>{t('reference')}</span>
                       <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{docRef}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>Student</span>
+                      <span style={{ color: '#666663' }}>{t('student')}</span>
                       <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{studentName}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>Grade Level</span>
+                      <span style={{ color: '#666663' }}>{t('grade_level')}</span>
                       <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{gradeLevel}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#666663' }}>Due Date</span>
+                      <span style={{ color: '#666663' }}>{t('due_date')}</span>
                       <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{dateFormatted}</span>
                     </div>
 
@@ -387,8 +389,8 @@ const BankDetails = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <strong style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>Document Fee</strong>
-                        <span style={{ display: 'block', fontSize: '0.68rem', color: '#888885', marginTop: '2px' }}>Processing and administrative fees included</span>
+                        <strong style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>{t('document_fee')}</strong>
+                        <span style={{ display: 'block', fontSize: '0.68rem', color: '#888885', marginTop: '2px' }}>{t('processing_fees_included')}</span>
                       </div>
                       <span style={{ color: '#7a0c2e', fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
                         {documentFee}
@@ -409,7 +411,7 @@ const BankDetails = () => {
                       boxSizing: 'border-box'
                     }}>
                       <span style={{ fontSize: '1rem', lineHeight: '1' }}>•</span>
-                      <span>Payment Awaiting Confirmation</span>
+                      <span>{t('payment_awaiting_confirmation')}</span>
                     </div>
 
                   </div>
@@ -435,7 +437,7 @@ const BankDetails = () => {
                     boxSizing: 'border-box',
                     width: '100%'
                   }}>
-                    {uploadingReceipt ? 'UPLOADING...' : 'UPLOAD TRANSFER RECEIPT'}
+                    {uploadingReceipt ? t('uploading').toUpperCase() : t('upload_transfer_receipt').toUpperCase()}
                     <Upload size={16} />
                     <input 
                       type="file" 
@@ -493,9 +495,9 @@ const BankDetails = () => {
               padding: '1.25rem',
               boxSizing: 'border-box'
             }}>
-              <strong style={{ display: 'block', fontSize: '0.85rem', color: '#1a1a1a', marginBottom: '4px', fontFamily: "'Inter', sans-serif" }}>Need Assistance?</strong>
+              <strong style={{ display: 'block', fontSize: '0.85rem', color: '#1a1a1a', marginBottom: '4px', fontFamily: "'Inter', sans-serif" }}>{t('need_assistance')}</strong>
               <p style={{ fontSize: '0.8rem', color: '#666663', lineHeight: 1.4, margin: '0 0 10px 0', fontFamily: "'Inter', sans-serif" }}>
-                Our bursar's office is available Mon-Fri, 8:00 AM - 4:30 PM for any billing inquiries.
+                {t('need_assistance_desc')}
               </p>
               <button 
                 onClick={() => alert('Contacting billing support...')}
@@ -588,7 +590,7 @@ const BankDetails = () => {
                   <Clock size={12} />
                 </div>
                 <div>
-                  <strong style={{ display: 'block', color: '#888888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>VERIFICATION</strong>
+                  <strong style={{ display: 'block', color: '#888888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>{t('verification').toUpperCase()}</strong>
                   <span style={{ color: '#888888', fontSize: '0.68rem', marginTop: '2px', display: 'block' }}>24-48 Hours</span>
                 </div>
               </div>

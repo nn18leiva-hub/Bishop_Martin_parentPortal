@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/ThemeLanguageContext';
 import { KeyRound, Mail, ShieldCheck, User, Camera, Upload } from 'lucide-react';
 import { apiFetch } from '../services/api';
 
 const Profile = () => {
   const { user, fetchProfile } = useAuth();
+  const { t } = useSettings();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -22,8 +24,8 @@ const Profile = () => {
     e.preventDefault();
     setPwError('');
     setPwMessage('');
-    if (newPassword !== confirmPassword) return setPwError('New passwords do not match.');
-    if (newPassword.length < 6) return setPwError('New password must be at least 6 characters.');
+    if (newPassword !== confirmPassword) return setPwError(t('pw_not_match'));
+    if (newPassword.length < 6) return setPwError(t('pw_min_length'));
 
     setPwLoading(true);
     try {
@@ -31,12 +33,12 @@ const Profile = () => {
         method: 'POST',
         body: JSON.stringify({ currentPassword, newPassword })
       });
-      setPwMessage(res.message || 'Password updated successfully!');
+      setPwMessage(t('pw_success'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setPwError(err.message || 'Failed to update password.');
+      setPwError(err.message || t('pw_fail'));
     } finally {
       setPwLoading(false);
     }
@@ -129,8 +131,8 @@ const Profile = () => {
     <div className="animate-up" style={{ padding: '1rem 0' }}>
       <div className="flex flex-responsive justify-between items-start mb-6 gap-2">
         <div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#2c2c2c', fontFamily: "'Outfit', sans-serif" }}>Account Settings</h2>
-          <p style={{ color: '#666666', fontSize: '0.9rem' }}>Manage your personal profile and security boundaries.</p>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#2c2c2c', fontFamily: "'Outfit', sans-serif" }}>{t('account_settings')}</h2>
+          <p style={{ color: '#666666', fontSize: '0.9rem' }}>{t('manage_personal_profile')}</p>
         </div>
       </div>
  
@@ -140,7 +142,7 @@ const Profile = () => {
             {/* Profile Picture Upload Block */}
             <div className="mock-card" style={{ borderTop: '4px solid #7a0c2e', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                 <h3 className="mb-4 flex items-center gap-2" style={{ color: '#7a0c2e', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1.25rem 0', alignSelf: 'flex-start' }}>
-                   <Camera size={20} /> Profile Picture
+                   <Camera size={20} /> {t('profile_picture')}
                 </h3>
                 
                 <div style={{ position: 'relative', width: '120px', height: '120px', margin: '1rem auto' }}>
@@ -161,7 +163,7 @@ const Profile = () => {
                     cursor: 'pointer',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
                     transition: 'all 0.2s'
-                  }} title="Upload Photo">
+                  }} title={t('upload_receipt')}>
                     <Upload size={16} />
                     <input 
                       type="file" 
@@ -173,33 +175,33 @@ const Profile = () => {
                   </label>
                 </div>
 
-                {uploadingAvatar && <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '8px' }}>Uploading picture...</p>}
+                {uploadingAvatar && <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '8px' }}>{t('uploading_picture')}</p>}
                 {avatarError && <p style={{ fontSize: '0.8rem', color: '#ef4444', marginTop: '8px' }}>{avatarError}</p>}
                 {avatarSuccess && <p style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '8px' }}>{avatarSuccess}</p>}
                 
                 <p style={{ color: '#888888', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                  Supported formats: JPG, PNG. Max size: 2MB.
+                  {t('supported_formats')}
                 </p>
             </div>
 
             {/* Personal Info Details Block */}
             <div className="mock-card" style={{ borderTop: '4px solid #3b82f6', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem' }}>
-                <h3 className="mb-4 flex items-center gap-2" style={{ color: '#2563eb', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1.25rem 0' }}><User size={20} /> Personal Identification</h3>
+                <h3 className="mb-4 flex items-center gap-2" style={{ color: '#2563eb', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1.25rem 0' }}><User size={20} /> {t('personal_identification')}</h3>
                 
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <p style={{ fontSize: '0.75rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', fontWeight: 600 }}>Full Legal Name</p>
+                    <p style={{ fontSize: '0.75rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', fontWeight: 600 }}>{t('full_legal_name')}</p>
                     <p style={{ fontSize: '1.1rem', color: '#2c2c2c', fontWeight: 600 }}>{user.full_name || 'N/A'}</p>
                 </div>
  
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <p style={{ fontSize: '0.75rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', fontWeight: 600 }}>Registered Email</p>
+                    <p style={{ fontSize: '0.75rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', fontWeight: 600 }}>{t('registered_email')}</p>
                     <p style={{ fontSize: '1.1rem', color: '#2c2c2c', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Mail size={16} color="#7a0c2e" /> {user.email || 'N/A'}
                     </p>
                 </div>
  
                 <div>
-                    <p style={{ fontSize: '0.75rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>Access Node Clearance</p>
+                    <p style={{ fontSize: '0.75rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>{t('access_node_clearance')}</p>
                     <span className="status-badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700 }}>
                         {(user.role || user.type || 'Standard').toUpperCase()}
                     </span>
@@ -210,7 +212,7 @@ const Profile = () => {
         {/* Password Change Block */}
         <div className="mock-card" style={{ borderTop: '4px solid #f59e0b', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', alignSelf: 'start' }}>
             <h3 style={{ color: '#d97706', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <KeyRound size={20} /> Change Password
+                <KeyRound size={20} /> {t('change_password')}
             </h3>
 
             {pwError && <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: '8px', padding: '10px 14px', fontSize: '0.875rem', marginBottom: '1rem' }}>{pwError}</div>}
@@ -220,35 +222,35 @@ const Profile = () => {
 
             <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Current Password</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('current_password')}</label>
                     <input
                         type="password"
                         value={currentPassword}
                         onChange={e => setCurrentPassword(e.target.value)}
                         required
-                        placeholder="Enter your current password"
+                        placeholder={t('enter_current_password')}
                         style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box' }}
                     />
                 </div>
                 <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>New Password</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('new_password')}</label>
                     <input
                         type="password"
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
                         required
-                        placeholder="At least 6 characters"
+                        placeholder={t('at_least_6_chars')}
                         style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box' }}
                     />
                 </div>
                 <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Confirm New Password</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('confirm_new_password')}</label>
                     <input
                         type="password"
                         value={confirmPassword}
                         onChange={e => setConfirmPassword(e.target.value)}
                         required
-                        placeholder="Repeat new password"
+                        placeholder={t('repeat_new_password')}
                         style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box' }}
                     />
                 </div>
@@ -257,7 +259,7 @@ const Profile = () => {
                     disabled={pwLoading}
                     style={{ background: '#f59e0b', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.65rem 1rem', fontWeight: 700, fontSize: '0.9rem', cursor: pwLoading ? 'wait' : 'pointer', opacity: pwLoading ? 0.7 : 1 }}
                 >
-                    {pwLoading ? 'Updating...' : 'Update Password'}
+                    {pwLoading ? t('updating') : t('update_password')}
                 </button>
             </form>
         </div>

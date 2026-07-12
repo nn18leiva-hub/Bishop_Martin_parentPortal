@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/ThemeLanguageContext';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -38,6 +39,7 @@ const STUDENT_PROFILES = [
 
 const NewRequest = () => {
   const { user } = useAuth();
+  const { t } = useSettings();
   const navigate = useNavigate();
 
   const renderAvatar = (userObject, size = 32) => {
@@ -1234,7 +1236,7 @@ const NewRequest = () => {
                   boxShadow: '0 2px 10px rgba(0,0,0,0.01)'
                 }}>
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#5c0922', borderBottom: '1.5px solid #f0f0f0', paddingBottom: '0.75rem', marginBottom: '1.25rem', fontFamily: 'Georgia, serif' }}>
-                    Order Summary
+                    {t('request_summary')}
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
