@@ -1049,6 +1049,25 @@ select:-webkit-autofill:focus {
   display: flex;
   min-height: 100vh;
   background-color: #faf9f6;
+  --page-bg: #faf9f6;
+  --card-bg: #ffffff;
+  --border-color: #eaeaea;
+  --table-header-bg: #faf9f6;
+  --sidebar-icon-bg: #e6e4e0;
+  --text-color: #2c2c2c;
+  --text-sub: #666663;
+  --text-muted: #8e8b82;
+  --text-value: #2d2d2d;
+  --divider: #f0f0f0;
+  --step-inactive-bg: #ffffff;
+  --step-inactive-border: #cccccc;
+  --pending-bg: #fbf5e1;
+  --timeline-divider: #eaeaea;
+  --secondary-btn: #ffffff;
+  --secondary-btn-border: #dcdad5;
+  --secondary-btn-text: #4a4743;
+  --ref-text-color: #4a4743;
+  --breadcrumb-sub: #888888;
 }
 
 /* ---- Sidebar ---- */
@@ -2044,6 +2063,20 @@ body.dark {
   --table-header-bg: #212121;
   --sidebar-icon-bg: #2d2d2d;
   --text-color: #e0e0e0;
+  --page-bg: #121212;
+  --text-sub: #888888;
+  --text-muted: #666666;
+  --text-value: #dddddd;
+  --divider: #2a2a2a;
+  --step-inactive-bg: #2a2a2a;
+  --step-inactive-border: #444444;
+  --pending-bg: #211a00;
+  --timeline-divider: #2a2a2a;
+  --secondary-btn: #252525;
+  --secondary-btn-border: #3a3a3a;
+  --secondary-btn-text: #cccccc;
+  --ref-text-color: #d4d0c8;
+  --breadcrumb-sub: #666666;
 }
 
 body.dark .db-app-container {

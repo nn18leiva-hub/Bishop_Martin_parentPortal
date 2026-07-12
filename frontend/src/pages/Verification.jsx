@@ -12,21 +12,21 @@ const Verification = () => {
   const dk = theme === 'dark';
 
   const c = {
-    outerCard:     dk ? '#1a1a1a'  : '#ffffff',
-    outerBorder:   dk ? '#2a2a2a'  : '#eaeaea',
-    subCard:       dk ? '#212121'  : '#fcfbfa',
-    subBorder:     dk ? '#2e2e2e'  : '#e8e6e1',
-    divider:       dk ? '#2e2e2e'  : '#eae5db',
-    dashedDivider: dk ? '#333333'  : '#eae5db',
-    textMain:      dk ? '#e8e8e8'  : '#2c2c2c',
-    textSub:       dk ? '#888888'  : '#555555',
-    textMuted:     dk ? '#666666'  : '#8e8b82',
-    textValue:     dk ? '#dddddd'  : '#2c2c2c',
-    statusLabel:   dk ? '#bbbbbb'  : '#4a4743',
+    outerCard:     'var(--card-bg, #ffffff)',
+    outerBorder:   'var(--border-color, #eaeaea)',
+    subCard:       'var(--page-bg, #fcfbfa)',
+    subBorder:     'var(--border-color, #e8e6e1)',
+    divider:       'var(--border-color, #eae5db)',
+    dashedDivider: 'var(--border-color, #eae5db)',
+    textMain:      'var(--text-color, #2c2c2c)',
+    textSub:       'var(--text-sub, #555555)',
+    textMuted:     'var(--text-muted, #8e8b82)',
+    textValue:     'var(--text-value, #2c2c2c)',
+    statusLabel:   'var(--secondary-btn-text, #4a4743)',
     verifiedBg:    dk ? 'rgba(16,185,129,0.12)' : '#d1fae5',
     pendingBg:     dk ? 'rgba(217,119,6,0.12)'  : '#fef3c7',
     infoBg:        dk ? '#1e1a10'  : '#fcfbfa',
-    needHelpText:  dk ? '#888888'  : '#999999',
+    needHelpText:  'var(--text-sub, #999999)',
   };
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
