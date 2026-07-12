@@ -8,7 +8,29 @@ import HeaderActions from '../components/HeaderActions';
 
 const StaffDashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
-  const { t } = useSettings();
+  const { t, theme } = useSettings();
+  const dk = theme === 'dark';
+
+  const c = {
+    textMain: dk ? '#ffffff' : '#2c2c2c',
+    textSub: dk ? '#bbbbbb' : '#666666',
+    border: dk ? '#2a2a2a' : '#eaeaea',
+    searchBg: dk ? '#2a2a2a' : '#f5f5f5',
+    searchBorder: dk ? '#3d3d3d' : '#eaeaea',
+    tableFooterBg: dk ? '#1e1e1e' : '#faf9f6',
+    tableBorder: dk ? '#2a2a2a' : '#eaeaea',
+    tableRowBorder: dk ? '#242424' : '#f9f9f9',
+    selectBg: dk ? '#2a2a2a' : '#ffffff',
+    selectBorder: dk ? '#3d3d3d' : '#eaeaea',
+    selectColor: dk ? '#ffffff' : '#333333',
+    cardTitleColor: dk ? '#ffffff' : '#1a1a1a',
+    modalText: dk ? '#e0e0e0' : '#333333',
+    modalHeading: dk ? '#ffffff' : '#2c2c2c',
+    badgeText: dk ? '#dddddd' : '#4b5563',
+    badgeBg: dk ? '#2a2a2a' : '#f3f4f6',
+    deleteBtnBg: dk ? '#2d2d2d' : '#f5f5f5',
+  };
+
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [pendingParents, setPendingParents] = useState([]);
@@ -240,13 +262,13 @@ const StaffDashboard = () => {
       
       {/* ── Page Header & Navigation Bar ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#7a0c2e', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
+        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: dk ? '#ffb4c4' : '#7a0c2e', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
           Bishop Martin High School
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
-          <div style={{ background: '#f5f5f5', border: '1px solid #eaeaea', borderRadius: '20px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ background: c.searchBg, border: `1px solid ${c.searchBorder}`, borderRadius: '20px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Search size={15} color="#888" />
-            <input type="text" placeholder={t('search_records')} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '180px', fontFamily: "'Outfit', sans-serif" }} />
+            <input type="text" placeholder={t('search_records')} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '180px', fontFamily: "'Outfit', sans-serif", color: c.selectColor }} />
           </div>
           <HeaderActions />
         </div>
@@ -254,10 +276,10 @@ const StaffDashboard = () => {
 
       {/* ── Dashboard Title ── */}
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2c2c2c', margin: '0 0 6px 0', fontFamily: "'Outfit', sans-serif" }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: c.textMain, margin: '0 0 6px 0', fontFamily: "'Outfit', sans-serif" }}>
           {pageTitle}
         </h2>
-        <p style={{ fontSize: '0.85rem', color: '#666666', margin: 0, maxWidth: '750px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: '0.85rem', color: c.textSub, margin: 0, maxWidth: '750px', lineHeight: 1.5 }}>
           {pageDescription}
         </p>
       </div>
@@ -303,14 +325,10 @@ const StaffDashboard = () => {
           <p className="serif-number" style={{ fontSize: '2.3rem', margin: 0 }}>
             {totalProcessedCount}
           </p>
-        </div>
-
-      </div>
-
-      {/* ── Parents Verification Section (Only on Approval Queue Page) ── */}
+            {/* ── Parents Verification Section (Only on Approval Queue Page) ── */}
       {isApprovalPage && (
         <div style={{ marginBottom: '2.5rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: dk ? '#ffb4c4' : '#7a0c2e', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif" }}>
             Parents Awaiting Identity Verification ({pendingParents.length})
           </h3>
           <div className="mock-card" style={{ padding: '0.5rem 0' }}>
@@ -322,7 +340,7 @@ const StaffDashboard = () => {
               <div style={{ overflowX: 'auto', width: '100%' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                    <tr style={{ borderBottom: `1px solid ${c.border}` }}>
                       <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Parent Name</th>
                       <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
                       <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</th>
@@ -335,9 +353,9 @@ const StaffDashboard = () => {
                     {pendingParents.map((parent, idx) => {
                       const parts = parent.full_name.split(' ');
                       const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
-
+ 
                       return (
-                        <tr key={parent.parent_id || idx} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                        <tr key={parent.parent_id || idx} style={{ borderBottom: `1px solid ${c.tableRowBorder}` }}>
                           <td style={{ padding: '1.25rem 1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ 
                               width: 32, 
@@ -353,11 +371,11 @@ const StaffDashboard = () => {
                             }}>
                               {ini || 'P'}
                             </div>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{parent.full_name}</span>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: c.textMain }}>{parent.full_name}</span>
                           </td>
-                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.email}</td>
-                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>{parent.phone || 'N/A'}</td>
-                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: '#4b5563' }}>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: c.textSub }}>{parent.email}</td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: c.textSub }}>{parent.phone || 'N/A'}</td>
+                          <td style={{ padding: '1.25rem 1rem', fontSize: '0.85rem', color: c.textSub }}>
                             {new Date(parent.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </td>
                           <td style={{ padding: '1.25rem 1rem' }}>
@@ -368,7 +386,7 @@ const StaffDashboard = () => {
                             ) : (
                               <span 
                                 onClick={() => openModal('ssn', parent)} 
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: dk ? '#ffb4c4' : '#7a0c2e', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
                               >
                                 <AlertTriangle size={14} /> Verify SSN Card
                               </span>
@@ -379,7 +397,7 @@ const StaffDashboard = () => {
                               {parent.verified ? (
                                 <button 
                                   onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
-                                  style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                  style={{ background: c.deleteBtnBg, border: `1px solid ${c.border}`, color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
                                 >
                                   Delete
                                 </button>
@@ -393,7 +411,7 @@ const StaffDashboard = () => {
                                   </button>
                                   <button 
                                     onClick={() => handleVerifyIdentityDirect(parent.parent_id, false)} 
-                                    style={{ background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                                    style={{ background: c.deleteBtnBg, border: `1px solid ${c.border}`, color: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
                                   >
                                     Reject
                                   </button>
@@ -417,7 +435,7 @@ const StaffDashboard = () => {
         <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+              <tr style={{ borderBottom: `1px solid ${c.border}` }}>
                 <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Student Name</th>
                 <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Document Type</th>
                 <th style={{ padding: '1rem', fontSize: '0.72rem', fontWeight: 700, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification</th>
@@ -432,7 +450,7 @@ const StaffDashboard = () => {
                 const ini = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase();
 
                 return (
-                  <tr key={req.request_id || i} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                  <tr key={req.request_id || i} style={{ borderBottom: `1px solid ${c.tableRowBorder}` }}>
                     
                     {/* Student Name & ID */}
                     <td style={{ padding: '1.25rem 1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -451,7 +469,7 @@ const StaffDashboard = () => {
                         {ini || 'S'}
                       </div>
                       <div>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2c2c2c' }}>{req.student_full_name}</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: c.textMain }}>{req.student_full_name}</div>
                         <div style={{ fontSize: '0.72rem', color: '#888888' }}>ID: {req.student_bemis_id || `BM-2024-${req.request_id}`}</div>
                       </div>
                     </td>
@@ -459,8 +477,8 @@ const StaffDashboard = () => {
                     {/* Document Type */}
                     <td style={{ padding: '1.25rem 1rem' }}>
                       <span style={{ 
-                        background: '#f3f4f6', 
-                        color: '#4b5563', 
+                        background: c.badgeBg, 
+                        color: c.badgeText, 
                         padding: '4px 10px', 
                         borderRadius: '16px', 
                         fontSize: '0.75rem', 
@@ -525,9 +543,9 @@ const StaffDashboard = () => {
                           fontSize: '0.8rem', 
                           fontWeight: 600, 
                           borderRadius: '6px', 
-                          border: '1px solid #eaeaea', 
-                          background: '#ffffff',
-                          color: '#333333',
+                          border: `1px solid ${c.selectBorder}`, 
+                          background: c.selectBg,
+                          color: c.selectColor,
                           width: '130px',
                           outline: 'none',
                           cursor: 'pointer'
@@ -569,7 +587,7 @@ const StaffDashboard = () => {
         </div>
 
         {/* Table Footer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderTop: '1px solid #eaeaea', backgroundColor: '#faf9f6' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderTop: `1px solid ${c.border}`, backgroundColor: c.tableFooterBg }}>
           <span style={{ fontSize: '0.8rem', color: '#8e8b82', display: 'flex', alignItems: 'center', gap: '6px' }}>
             Showing {filteredRequests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, filteredRequests.length)} of {filteredRequests.length} requests
             <span style={{ margin: '0 8px', color: '#ccc' }}>|</span>
@@ -583,10 +601,10 @@ const StaffDashboard = () => {
               style={{
                 padding: '2px 6px',
                 borderRadius: '4px',
-                border: '1px solid #eaeaea',
-                background: '#faf9f6',
+                border: `1px solid ${c.border}`,
+                background: c.tableFooterBg,
                 fontSize: '0.8rem',
-                color: '#555555',
+                color: c.textSub,
                 cursor: 'pointer',
                 outline: 'none',
                 fontFamily: "'Inter', sans-serif"
@@ -666,10 +684,10 @@ const StaffDashboard = () => {
       {/* ── VERIFICATION MODALS ── */}
       {activeModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)', padding: '1rem' }}>
-          <div className="glass-panel modal-panel" style={{ borderTop: `4px solid ${activeModal === 'ssn' ? '#7a0c2e' : activeModal === 'payment' ? '#10b981' : '#3b82f6'}`, marginBottom: 0, background: '#ffffff', color: '#333333' }}>
+          <div className="glass-panel modal-panel" style={{ borderTop: `4px solid ${activeModal === 'ssn' ? '#7a0c2e' : activeModal === 'payment' ? '#10b981' : '#3b82f6'}`, marginBottom: 0, background: c.cardBg, color: c.modalText }}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                 <h3 style={{ fontSize: '1.5rem', marginBottom: '0.25rem', color: '#2c2c2c', fontWeight: 700 }}>
+                 <h3 style={{ fontSize: '1.5rem', marginBottom: '0.25rem', color: c.modalHeading, fontWeight: 700 }}>
                    {activeModal === 'ssn' && `Identity Verification`}
                    {activeModal === 'payment' && `Payment Verification`}
                    {activeModal === 'info' && `Request Details Dossier`}
@@ -683,7 +701,7 @@ const StaffDashboard = () => {
             
             {(activeModal === 'ssn' || activeModal === 'payment') && (
                <>
-                 <div style={{ backgroundColor: '#000', borderRadius: '12px', overflow: 'hidden', display: 'flex', justifyContent: 'center', marginBottom: '2rem', minHeight: '300px', padding: '1rem', border: '1px solid #eaeaea' }}>
+                 <div style={{ backgroundColor: '#000', borderRadius: '12px', overflow: 'hidden', display: 'flex', justifyContent: 'center', marginBottom: '2rem', minHeight: '300px', padding: '1rem', border: `1px solid ${c.border}` }}>
                    <img 
                      src={`http://localhost:3000/${activeModal === 'ssn' ? modalPayload?.ssn_card_image_path : modalPayload?.receipt_image_path}`} 
                      alt="Verification Document" 
@@ -700,7 +718,7 @@ const StaffDashboard = () => {
                          <button onClick={handleApproveIdentity} className="btn-primary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', background: '#7a0c2e', border: 'none', color: '#ffffff', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer' }}>
                            <CheckCircle size={18}/> Formally Approve Identity
                          </button>
-                         <button onClick={handleRejectIdentity} className="btn-secondary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', background: '#f5f5f5', border: '1px solid #eaeaea', color: '#ef4444', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer' }}>
+                         <button onClick={handleRejectIdentity} className="btn-secondary flex justify-center items-center gap-2 flex-1" style={{ fontSize: '1rem', background: c.deleteBtnBg, border: `1px solid ${c.border}`, color: '#ef4444', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer' }}>
                            <XCircle size={18}/> Reject Identity
                          </button>
                        </>
@@ -717,23 +735,23 @@ const StaffDashboard = () => {
                <div>
                   <div className="flex-responsive" style={{ gap: '2rem', marginBottom: '2rem' }}>
                      <div style={{ flex: 1 }}>
-                        <h4 style={{ color: '#7a0c2e', marginBottom: '1rem', borderBottom: '1px solid #eaeaea', paddingBottom: '0.5rem', fontWeight: 700 }}>Student Profile</h4>
-                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Name:</span> <strong style={{ color: '#2c2c2c' }}>{modalPayload?.student_full_name}</strong></p>
-                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>BEMIS ID:</span> <strong style={{ color: '#2c2c2c' }}>{modalPayload?.student_bemis_id || 'N/A'}</strong></p>
-                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Class / Year:</span> <strong style={{ color: '#2c2c2c' }}>{modalPayload?.student_graduation_year_or_years_attended || 'N/A'}</strong></p>
+                        <h4 style={{ color: dk ? '#ffb4c4' : '#7a0c2e', marginBottom: '1rem', borderBottom: `1px solid ${c.border}`, paddingBottom: '0.5rem', fontWeight: 700 }}>Student Profile</h4>
+                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Name:</span> <strong style={{ color: c.textMain }}>{modalPayload?.student_full_name}</strong></p>
+                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>BEMIS ID:</span> <strong style={{ color: c.textMain }}>{modalPayload?.student_bemis_id || 'N/A'}</strong></p>
+                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Class / Year:</span> <strong style={{ color: c.textMain }}>{modalPayload?.student_graduation_year_or_years_attended || 'N/A'}</strong></p>
                      </div>
                      <div style={{ flex: 1 }}>
-                        <h4 style={{ color: '#7a0c2e', marginBottom: '1rem', borderBottom: '1px solid #eaeaea', paddingBottom: '0.5rem', fontWeight: 700 }}>Request Meta</h4>
-                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Type:</span> <strong style={{ color: '#2c2c2c', textTransform: 'capitalize' }}>{(modalPayload?.document_type_name || '').replace('_', ' ')}</strong></p>
-                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Delivery:</span> <strong style={{ color: '#2c2c2c', textTransform: 'uppercase' }}>{modalPayload?.delivery_method}</strong></p>
-                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Submitted:</span> <strong style={{ color: '#2c2c2c' }}>{new Date(modalPayload?.request_date).toLocaleString()}</strong></p>
+                        <h4 style={{ color: dk ? '#ffb4c4' : '#7a0c2e', marginBottom: '1rem', borderBottom: `1px solid ${c.border}`, paddingBottom: '0.5rem', fontWeight: 700 }}>Request Meta</h4>
+                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Type:</span> <strong style={{ color: c.textMain, textTransform: 'capitalize' }}>{(modalPayload?.document_type_name || '').replace('_', ' ')}</strong></p>
+                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Delivery:</span> <strong style={{ color: c.textMain, textTransform: 'uppercase' }}>{modalPayload?.delivery_method}</strong></p>
+                        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}><span style={{ color: '#888888' }}>Submitted:</span> <strong style={{ color: c.textMain }}>{new Date(modalPayload?.request_date).toLocaleString()}</strong></p>
                      </div>
                   </div>
                   
                   {modalPayload?.form_data && (
-                     <div style={{ background: '#f9fafb', padding: '1.5rem', borderRadius: '12px', border: '1px solid #eaeaea', marginBottom: '2rem' }}>
-                        <h4 style={{ color: '#2c2c2c', marginBottom: '1rem', fontWeight: 700 }}>Form Payload Data</h4>
-                        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.875rem', color: '#444444', background: 'transparent', padding: 0, margin: 0, fontFamily: 'inherit' }}>
+                     <div style={{ background: c.tableFooterBg, padding: '1.5rem', borderRadius: '12px', border: `1px solid ${c.border}`, marginBottom: '2rem' }}>
+                        <h4 style={{ color: c.textMain, marginBottom: '1rem', fontWeight: 700 }}>Form Payload Data</h4>
+                        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.875rem', color: c.textSub, background: 'transparent', padding: 0, margin: 0, fontFamily: 'inherit' }}>
                           {(() => {
                              try {
                                 const parsed = typeof modalPayload.form_data === 'string' ? JSON.parse(modalPayload.form_data) : modalPayload.form_data;
