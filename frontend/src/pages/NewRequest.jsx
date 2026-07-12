@@ -216,11 +216,8 @@ const NewRequest = () => {
       else base = 15;
     }
 
-    // Express/priority adds $10 on top for paid docs (reaching the express price),
-    // and $25 for free docs (flat priority surcharge)
-    let speed = formData.delivery_speed === 'priority'
-      ? (selectedType.requires_payment ? 10 : 25)
-      : 0;
+    // Priority processing is a flat +$25 add-on on top of base price
+    let speed = formData.delivery_speed === 'priority' ? 25 : 0;
     let shipping = formData.delivery_method === 'mailed' ? 5 : 0;
     let processingFee = 0;
 
